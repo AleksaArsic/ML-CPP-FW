@@ -1,13 +1,11 @@
 #include <iostream>
 #include <vector>
 #include "Eigen/Dense"
-#include "test.hpp"
+#include "Model.hpp"
 
 int main()
 {
-    std::vector<Test> testVector {Test{}, Test{}, Test{}, Test{}, Test{}, Test{}};
-
-    std::cout << testVector[0] << std::endl;
+    Model model;
 
     Eigen::MatrixXd m(2, 2);
     m(0, 0) = 1;
