@@ -1,6 +1,7 @@
 #include "Model.hpp"
 #include <fstream>
 #include <iostream>
+#include <string>
 
 // Add new layer to the NN Model
 bool Model::addLayer(Layer layer)
@@ -39,26 +40,29 @@ bool Model::compileModel()
         (*it)->set_mLearnableCoeffs(noOfCoeffs);
         mLearnableCoeffs += noOfCoeffs;
 
-        // iterate trough Perceptrons
-        for(uint8_t i = 0; i < perceptronNo; i++)
-        {
-            // initialize W, x, b for each Perceptron in each Layer
-            // bias - b - can be common for layer instead of having it in each Perceptron
-            Perceptron& p = (*it)->get_Perceptron(i);
-            p.w = Eigen::MatrixXd::Random(1, prevPercNo);
-            p.x = Eigen::MatrixXd::Random(prevPercNo, 1);
-            p.b = 1.0;
+        // initialize layer bias
+        std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
+        std::shared_ptr<Eigen::MatrixXd> layerX = (*it)->get_mLayerX();
+        std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
 
-#if 0
-            std::cout << "LayerId: " << static_cast<int>(layerId) << std::endl;
-            std::cout << "(" << (*it)->get_Perceptron(i).w.rows() << ", " << (*it)->get_Perceptron(i).w.cols() << ")" << std::endl;
-            std::cout << "(" << (*it)->get_Perceptron(i).x.rows() << ", " << (*it)->get_Perceptron(i).x.cols() << ")" << std::endl;
-            std::cout << "Learnable coefficients: " << (*it)->get_mLearnableCoeffs() << std::endl;
-            std::cout << std::endl;
-#endif
+        *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
+        *layerX = Eigen::MatrixXd::Random(prevPercNo, 1);
+
+        if(layerId == (this->mLayersNo - 1))
+        {
+            *layerBias = Eigen::MatrixXd::Zero(perceptronNo, 1);
         }
+        else
+        {
+            *layerBias = Eigen::MatrixXd::Ones(perceptronNo, 1);
+        }
+
+#if 0        
+        std::cout << "perceptronNo: " << static_cast<int>(perceptronNo) << ", " << "prevPercNo: " << static_cast<int>(prevPercNo) << std::endl;
+        std::cout << *layerWeights << std::endl;
+#endif
     }
-    
+
     this->mIsCompiled = true;
 
     return this->mIsCompiled;
@@ -69,16 +73,6 @@ bool Model::saveModel(std::string modelPath) const
 {
     try
     {
-        std::ofstream modelFile;
-        modelFile.open (modelPath, std::ios::out);
-
-        for(auto it = mLayers.begin(); it != mLayers.end(); it++)
-        {
-            modelFile << "Placeholder.\n"; 
-        }
-
-        modelFile.close();
-
         return true;
     }
     catch(const std::exception& e)
@@ -124,7 +118,6 @@ void Model::modelSummary() const
             std::cout << "\t Coeffs = " << (*it)->get_mLearnableCoeffs() << std::endl;
             std::cout << "**************************************" << std::endl;
         }
-
         std::cout << "Total learnable coefficients = " << this->mLearnableCoeffs << std::endl;
         std::cout << "**************************************" << std::endl;
     }

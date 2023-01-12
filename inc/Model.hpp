@@ -3,46 +3,45 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-struct Perceptron
-{
-    // y = wx + b
-    Eigen::MatrixXd w;
-    Eigen::MatrixXd x;
-    double b;
-};
-
 class Layer
 {
     public:
         Layer(const uint8_t perceptronNo) : mLayerId(0), mPerceptronNo(perceptronNo), mLearnableCoeffs(0)
         {
             this->mInstances++;
-            this->mLayer = std::make_unique<Perceptron[]>(this->mPerceptronNo);
+            this->mLayerWeights = std::make_shared<Eigen::MatrixXd>();
+            this->mLayerX = std::make_shared<Eigen::MatrixXd>();
+            this->mLayerBias = std::make_shared<Eigen::MatrixXd>();
+
         }
 
-        Layer(Layer& l) : mLayer(std::move(l.mLayer)), mLayerId(l.mLayerId), mPerceptronNo(l.mPerceptronNo), mLearnableCoeffs(l.mLearnableCoeffs)
+        Layer(Layer& l) :  mLayerId(l.mLayerId), mPerceptronNo(l.mPerceptronNo), mLearnableCoeffs(l.mLearnableCoeffs)
         {
-            l.mLayer = nullptr;
+            mLayerWeights = std::move(l.mLayerWeights);
+            mLayerX = std::move(l.mLayerX);
+            mLayerBias = std::move(l.mLayerBias);
             l.mLayerId = 0;
             l.mPerceptronNo = 0;
             l.mLearnableCoeffs = 0;
         }
 
-        ~Layer()
-        {
-            mLayer.release();
-        }
-    
         uint8_t get_mPerceptronNo() const noexcept { return this->mPerceptronNo; }
         uint8_t get_mLayerId() const noexcept { return this->mLayerId; }
         uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
-        Perceptron& get_Perceptron(uint8_t perceptronId) const noexcept { return this->mLayer[perceptronId]; }
+
+        std::shared_ptr<Eigen::MatrixXd> get_mLayerWeights() const noexcept { return this->mLayerWeights; }
+        std::shared_ptr<Eigen::MatrixXd> get_mLayerX() const noexcept { return this->mLayerX; }
+        std::shared_ptr<Eigen::MatrixXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
 
         void set_mLayerId(uint8_t id) { this->mLayerId = id; }
         void set_mLearnableCoeffs(uint32_t coeffsNo) { this->mLearnableCoeffs = coeffsNo; }
     private:
         inline static uint8_t mInstances = 0;
-        std::unique_ptr<Perceptron[]> mLayer; // Number of Perceptrons is known in advance thus it is easier to dinamically allocate required number of Perceptrons
+
+        std::shared_ptr<Eigen::MatrixXd> mLayerWeights;
+        std::shared_ptr<Eigen::MatrixXd> mLayerX;
+        std::shared_ptr<Eigen::MatrixXd> mLayerBias;
+        
         uint8_t mLayerId;
         uint8_t mPerceptronNo;
         uint32_t mLearnableCoeffs; 
