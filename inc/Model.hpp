@@ -1,25 +1,36 @@
+#ifndef MODEL_HPP
+#define MODEL_HPP
+
 #include <memory>
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
+#include "Activations.hpp"
 
 class Layer
 {
     public:
         Layer(const uint8_t perceptronNo) : mLayerId(0), mPerceptronNo(perceptronNo), mLearnableCoeffs(0)
         {
-            this->mInstances++;
-            this->mLayerWeights = std::make_shared<Eigen::MatrixXd>();
-            this->mLayerX = std::make_shared<Eigen::MatrixXd>();
-            this->mLayerBias = std::make_shared<Eigen::MatrixXd>();
-
+            mInstances++;
+            mLayerWeights = std::make_shared<Eigen::MatrixXd>();
+            mLayerZ = std::make_shared<Eigen::VectorXd>();
+            mLayerBias = std::make_shared<Eigen::VectorXd>();
+            mActivationPtr = nullptr; // if the activation functor is not specified, mActivationPtr = nullptr
         }
 
-        Layer(Layer& l) :  mLayerId(l.mLayerId), mPerceptronNo(l.mPerceptronNo), mLearnableCoeffs(l.mLearnableCoeffs)
+        template<class T>
+        Layer(const uint8_t perceptronNo, Activations::ActivationType<T>) : Layer(perceptronNo)
+        {
+            mActivationPtr = std::make_unique<T>();
+        }
+
+        Layer(Layer& l) : mLayerId(l.mLayerId), mPerceptronNo(l.mPerceptronNo), mLearnableCoeffs(l.mLearnableCoeffs)
         {
             mLayerWeights = std::move(l.mLayerWeights);
-            mLayerX = std::move(l.mLayerX);
+            mLayerZ = std::move(l.mLayerZ);
             mLayerBias = std::move(l.mLayerBias);
+            mActivationPtr = std::move(l.mActivationPtr);
             l.mLayerId = 0;
             l.mPerceptronNo = 0;
             l.mLearnableCoeffs = 0;
@@ -30,17 +41,20 @@ class Layer
         uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
 
         std::shared_ptr<Eigen::MatrixXd> get_mLayerWeights() const noexcept { return this->mLayerWeights; }
-        std::shared_ptr<Eigen::MatrixXd> get_mLayerX() const noexcept { return this->mLayerX; }
-        std::shared_ptr<Eigen::MatrixXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
+        std::shared_ptr<Eigen::VectorXd> get_mLayerZ() const noexcept { return this->mLayerZ; }
+        std::shared_ptr<Eigen::VectorXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
 
         void set_mLayerId(uint8_t id) { this->mLayerId = id; }
         void set_mLearnableCoeffs(uint32_t coeffsNo) { this->mLearnableCoeffs = coeffsNo; }
+
+        std::unique_ptr<Activations::ActivationFunctor> mActivationPtr;
+
     private:
         inline static uint8_t mInstances = 0;
 
         std::shared_ptr<Eigen::MatrixXd> mLayerWeights;
-        std::shared_ptr<Eigen::MatrixXd> mLayerX;
-        std::shared_ptr<Eigen::MatrixXd> mLayerBias;
+        std::shared_ptr<Eigen::VectorXd> mLayerZ;
+        std::shared_ptr<Eigen::VectorXd> mLayerBias;
         
         uint8_t mLayerId;
         uint8_t mPerceptronNo;
@@ -77,9 +91,12 @@ class Model
 
         uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
         uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
+
     private:
         std::vector<std::unique_ptr<Layer>> mLayers; // Number of Layers is not known in advance thus, std::vector is more suitable for storing Layers
         uint32_t mLearnableCoeffs;
         uint8_t mLayersNo;
         bool mIsCompiled;
 };
+
+#endif

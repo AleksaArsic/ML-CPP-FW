@@ -31,33 +31,45 @@ bool Model::compileModel()
     {
         uint8_t layerId = (*it)->get_mLayerId();
         uint8_t perceptronNo = (*it)->get_mPerceptronNo();
-        uint8_t prevPercNo = (0 == layerId ? perceptronNo : mLayers[layerId - 1]->get_mPerceptronNo());
+        uint8_t prevPercNo = ((0L) == layerId ? perceptronNo : mLayers[layerId - 1]->get_mPerceptronNo());
 
-        // calculate learnable coefficients
-        // learnableCoeffs = noOfPerceptrons * (noOfWeights + noOfInputs) + 1 (bias)
-        uint32_t noOfCoeffs = (perceptronNo * (2 * prevPercNo)) + 1;
-
-        (*it)->set_mLearnableCoeffs(noOfCoeffs);
-        mLearnableCoeffs += noOfCoeffs;
-
-        // initialize layer bias
+        // initialize layer coefficients
         std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
-        std::shared_ptr<Eigen::MatrixXd> layerX = (*it)->get_mLayerX();
-        std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
+        std::shared_ptr<Eigen::VectorXd> layerZ = (*it)->get_mLayerZ();
+        std::shared_ptr<Eigen::VectorXd> layerBias = (*it)->get_mLayerBias();
 
-        *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
-        *layerX = Eigen::MatrixXd::Random(prevPercNo, 1);
+        *layerZ = Eigen::VectorXd::Random(perceptronNo);
 
-        if(layerId == (this->mLayersNo - 1))
+        if((0L) == layerId)
         {
-            *layerBias = Eigen::MatrixXd::Zero(perceptronNo, 1);
+            // Input layer does not contain Weights, Biases nor Activation
+            *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
+            *layerBias = Eigen::VectorXd::Zero(perceptronNo);
+
+            (*it)->set_mLearnableCoeffs(0);
         }
         else
         {
-            *layerBias = Eigen::MatrixXd::Ones(perceptronNo, 1);
+            *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
+            *layerBias = Eigen::VectorXd::Ones(perceptronNo);
+
+            // calculate learnable coefficients
+            // learnableCoeffs = noOfPerceptrons * (noOfWeights + noOfInputs) + 1 (bias)
+            uint32_t noOfCoeffs = (perceptronNo * (2 * prevPercNo)) + 1;
+
+            (*it)->set_mLearnableCoeffs(noOfCoeffs);
+            mLearnableCoeffs += noOfCoeffs;
         }
 
-#if 0        
+#if 0       
+        std::cout << (*it)->mActivationPtr->name() << std::endl;
+        std::cout << (*(*it)->mActivationPtr)(3.23) << std::endl;
+
+        std::cout << *layerZ << std::endl;
+        std::cout << std::endl;
+        std::cout << *layerBias << std::endl;
+        std::cout << std::endl;
+
         std::cout << "perceptronNo: " << static_cast<int>(perceptronNo) << ", " << "prevPercNo: " << static_cast<int>(prevPercNo) << std::endl;
         std::cout << *layerWeights << std::endl;
 #endif
@@ -90,7 +102,7 @@ bool Model::loadModel()
     return false;
 }
 
-// Train desired model
+// Train compiled model
 void Model::modelFit()
 {
 
@@ -116,6 +128,10 @@ void Model::modelSummary() const
             std::cout << "Layer: " << static_cast<uint32_t>((*it)->get_mLayerId()) << std::endl;
             std::cout << "\t Perceptrons = " << static_cast<uint32_t>((*it)->get_mPerceptronNo()) << std::endl;
             std::cout << "\t Coeffs = " << (*it)->get_mLearnableCoeffs() << std::endl;
+            if((0L) != (*it)->get_mLayerId())
+            {
+                std::cout << "\t Activation = " << (*it)->mActivationPtr->name() << std::endl;
+            }
             std::cout << "**************************************" << std::endl;
         }
         std::cout << "Total learnable coefficients = " << this->mLearnableCoeffs << std::endl;
