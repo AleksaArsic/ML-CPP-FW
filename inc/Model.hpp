@@ -16,7 +16,7 @@ class Layer
             mLayerWeights = std::make_shared<Eigen::MatrixXd>();
             mLayerZ = std::make_shared<Eigen::VectorXd>();
             mLayerBias = std::make_shared<Eigen::VectorXd>();
-            mActivationPtr = nullptr; // if the activation functor is not specified, mActivationPtr = nullptr
+            mActivationPtr = nullptr; // if the activation functor type is not specified, mActivationPtr = nullptr
         }
 
         template<class T>
