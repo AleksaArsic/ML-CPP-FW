@@ -6,6 +6,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "Activations.hpp"
+#include "Loss.hpp"
 
 class Layer
 {
@@ -36,6 +37,7 @@ class Layer
             l.mLearnableCoeffs = 0;
         }
 
+        // Getters
         uint8_t get_mPerceptronNo() const noexcept { return this->mPerceptronNo; }
         uint8_t get_mLayerId() const noexcept { return this->mLayerId; }
         uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
@@ -44,9 +46,11 @@ class Layer
         std::shared_ptr<Eigen::VectorXd> get_mLayerZ() const noexcept { return this->mLayerZ; }
         std::shared_ptr<Eigen::VectorXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
 
+        // Setters
         void set_mLayerId(uint8_t id) { this->mLayerId = id; }
         void set_mLearnableCoeffs(uint32_t coeffsNo) { this->mLearnableCoeffs = coeffsNo; }
 
+        // Activation function unique_ptr
         std::unique_ptr<Activations::ActivationFunctor> mActivationPtr;
 
     private:
@@ -72,7 +76,20 @@ class Model
         bool addLayer(Layer layer);
 
         // Compile model with added layers, optimizer, loss function and metrics 
-        bool compileModel();
+        template<class T>
+        bool compileModel(Loss::LossType<T>)
+        {
+            // bind loss functor to model
+            mLossPtr = std::make_unique<T>();
+
+            // initialize all layers coefficients
+            this->initializeLayers();
+
+            // set model compiled 
+            this->mIsCompiled = true;
+
+            return this->mIsCompiled;
+        }
 
         // Save model weights to desired location
         bool saveModel(std::string modelPath = "./model.csv") const;
@@ -89,14 +106,21 @@ class Model
         // Show model summary by printing it on std::cout
         void modelSummary() const;
 
+        // Getters
         uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
         uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
+
+        // Loss function unique_ptr
+        std::unique_ptr<Loss::LossFunctor> mLossPtr;
 
     private:
         std::vector<std::unique_ptr<Layer>> mLayers; // Number of Layers is not known in advance thus, std::vector is more suitable for storing Layers
         uint32_t mLearnableCoeffs;
         uint8_t mLayersNo;
         bool mIsCompiled;
+
+        // Initialize all layers coefficients
+        void initializeLayers();
 };
 
 #endif

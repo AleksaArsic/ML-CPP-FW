@@ -2,6 +2,8 @@
 #define LOSS_HPP
 
 #include <string>
+#include <algorithm>
+#include "Eigen/Dense"
 
 namespace Loss
 {
@@ -10,21 +12,66 @@ namespace Loss
     struct LossFunctor
     {
         virtual std::string name() const = 0;
-        virtual double operator()(const double x, const double y) const = 0;
+        virtual double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const = 0;
     };
 
-    struct MeanSquareError : LossFunctor
+    struct MeanSquaredError : LossFunctor
     {
-        virtual std::string name() const
+        std::string name() const
         {
-            return "meansquareerror";
+            return "MeanSquaredError";
         }
 
-        virtual double operator()(const double x, const double y) const
+        // param: x -> expected
+        // param: y -> predicted
+        double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
         {
-            return 0.0;
+            Eigen::VectorXd diffSquared = x - y;
+            diffSquared = diffSquared.cwiseProduct(diffSquared);
+            
+            return (diffSquared.sum() / diffSquared.size());
         }      
-    }
+    };
+
+    struct MeanAbsoluteError : LossFunctor
+    {
+        std::string name() const
+        {
+            return "MeanAbsoluteError";
+        }
+
+        // param: x -> expected
+        // param: y -> predicted
+        double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+        {
+            Eigen::VectorXd diffAbs = x - y;
+            diffAbs = diffAbs.cwiseAbs();
+
+            return (diffAbs.sum() / diffAbs.size());
+        }      
+    };
+
+    struct BinaryCrossEntropy : LossFunctor
+    {
+        std::string name() const
+        {
+            return "BinaryCrossEntropy";
+        }
+
+        // param: x -> expected
+        // param: y -> predicted
+        // BCELoss = (1/n) * Sum_of( −(x * log(y) + (1−x) * log(1−y) ) )
+        double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+        {
+            Eigen::VectorXd predLogFirst = y.array().log10().matrix();
+            Eigen::VectorXd predLogSecond = ((Eigen::VectorXd::Ones(y.size()) - y).array().log10()).matrix();
+            Eigen::VectorXd expectedDiff = (Eigen::VectorXd::Ones(x.size()) - x);
+
+            double productSum = ((x.cwiseProduct(predLogFirst) + expectedDiff.cwiseProduct(predLogSecond))).sum();
+
+            return ((-productSum) / x.size());
+        }      
+    };
 }
 
 #endif

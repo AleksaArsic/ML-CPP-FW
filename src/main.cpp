@@ -2,6 +2,7 @@
 #include <vector>
 #include "Eigen/Dense"
 #include "Activations.hpp"
+#include "Loss.hpp"
 #include "Model.hpp"
 
 #include <cmath>
@@ -14,8 +15,24 @@ int main()
     model.addLayer(Layer(4, Activations::ActivationType<Activations::Relu>()));
     model.addLayer(Layer(3, Activations::ActivationType<Activations::LeakyRelu>()));
 
-    model.compileModel();
+    model.compileModel(Loss::LossType<Loss::MeanAbsoluteError>());
     model.modelSummary();
+
+    Eigen::VectorXd predicted = Eigen::VectorXd(4);
+    Eigen::VectorXd expected = Eigen::VectorXd(4);
+
+    predicted << 0.8,
+                0.7,
+                0.3,
+                0.9;
+
+    expected << 1,
+                0,
+                1,
+                1;
+
+    Loss::BinaryCrossEntropy bce;
+    std::cout << bce(expected, predicted) << std::endl;
 
 #if 0
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(3, 2);

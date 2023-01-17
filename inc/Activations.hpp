@@ -20,12 +20,12 @@ namespace Activations
     {
         std::string name() const override
         {
-            return "inputlayer";
+            return "InputActivation";
         }
 
         double operator()(const double x) const override 
         {
-            return x; // input layer does not have activation as it's purpose is to delegate the input signal to the deep layers
+            return x; // from some sources input layer does not have activation as it's purpose is to delegate the input signal to the deep layers
         }
     };
 
@@ -33,7 +33,7 @@ namespace Activations
     {
         std::string name() const override
         {
-            return "sigmoid";
+            return "Sigmoid";
         }
 
         double operator()(const double x) const override
@@ -46,7 +46,7 @@ namespace Activations
     {
         std::string name() const override
         {
-            return "relu";
+            return "Relu";
         }
 
         double operator()(const double x) const override
@@ -59,7 +59,7 @@ namespace Activations
     {
         std::string name() const override
         {
-            return "leakyrelu";
+            return "LeakyRelu";
         }
 
         double operator()(const double x) const override

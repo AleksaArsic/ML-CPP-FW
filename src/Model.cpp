@@ -23,8 +23,8 @@ bool Model::addLayer(Layer layer)
     
 }
 
-// Compile model with added layers, optimizer, loss function and metrics 
-bool Model::compileModel()
+// Initialize all layers coefficients
+void Model::initializeLayers()
 {
     // iterate trough layers
     for(auto it = mLayers.begin(); it != mLayers.end(); it++)
@@ -32,7 +32,7 @@ bool Model::compileModel()
         uint8_t layerId = (*it)->get_mLayerId();
         uint8_t perceptronNo = (*it)->get_mPerceptronNo();
         uint8_t prevPercNo = ((0L) == layerId ? perceptronNo : mLayers[layerId - 1]->get_mPerceptronNo());
-
+ 
         // initialize layer coefficients
         std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
         std::shared_ptr<Eigen::VectorXd> layerZ = (*it)->get_mLayerZ();
@@ -74,10 +74,6 @@ bool Model::compileModel()
         std::cout << *layerWeights << std::endl;
 #endif
     }
-
-    this->mIsCompiled = true;
-
-    return this->mIsCompiled;
 }
 
 // Save model weights to desired location
@@ -135,6 +131,7 @@ void Model::modelSummary() const
             std::cout << "**************************************" << std::endl;
         }
         std::cout << "Total learnable coefficients = " << this->mLearnableCoeffs << std::endl;
+        std::cout << "Loss function: " << this->mLossPtr->name() << std::endl;
         std::cout << "**************************************" << std::endl;
     }
     else
