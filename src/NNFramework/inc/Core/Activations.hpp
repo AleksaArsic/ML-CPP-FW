@@ -5,75 +5,77 @@
 #include <string>
 #include <algorithm>
 
-namespace Activations
+namespace NNFramework
 {
-
-    template<class TypeName> struct ActivationType { typedef TypeName T; }; 
-
-    struct ActivationFunctor
+    namespace Activations
     {
-        virtual std::string name() const = 0;
-        virtual double operator()(const double x) const = 0;
-    };
 
-    struct InputActivation : ActivationFunctor
-    {
-        std::string name() const override
-        {
-            return "InputActivation";
-        }
+        template<class TypeName> struct ActivationType { typedef TypeName T; }; 
 
-        double operator()(const double x) const override 
+        struct ActivationFunctor
         {
-            return x; // from some sources input layer does not have activation as it's purpose is to delegate the input signal to the deep layers
-        }
-    };
+            virtual std::string name() const = 0;
+            virtual double operator()(const double x) const = 0;
+        };
 
-    struct Sigmoid : ActivationFunctor
-    {
-        std::string name() const override
+        struct InputActivation : ActivationFunctor
         {
-            return "Sigmoid";
-        }
-
-        double operator()(const double x) const override
-        {
-            return (1.0 / (1.0 + std::exp(-x)));
-        }
-    };
-
-    struct Relu : ActivationFunctor
-    {
-        std::string name() const override
-        {
-            return "Relu";
-        }
-
-        double operator()(const double x) const override
-        {
-            return std::max(0.0, x);
-        }
-    };
-
-    struct LeakyRelu : ActivationFunctor
-    {
-        std::string name() const override
-        {
-            return "LeakyRelu";
-        }
-
-        double operator()(const double x) const override
-        {
-            if(x >= 0)
+            std::string name() const override
             {
-                return x;
+                return "InputActivation";
             }
-            else
+
+            double operator()(const double x) const override 
             {
-                return 0.01 * x; // f(y) = a*y -> when a is not 0.01 than it's called Randomized ReLU as per: https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6
+                return x; // from some sources input layer does not have activation as it's purpose is to delegate the input signal to the deep layers
             }
-        }
-    };
+        };
+
+        struct Sigmoid : ActivationFunctor
+        {
+            std::string name() const override
+            {
+                return "Sigmoid";
+            }
+
+            double operator()(const double x) const override
+            {
+                return (1.0 / (1.0 + std::exp(-x)));
+            }
+        };
+
+        struct Relu : ActivationFunctor
+        {
+            std::string name() const override
+            {
+                return "Relu";
+            }
+
+            double operator()(const double x) const override
+            {
+                return std::max(0.0, x);
+            }
+        };
+
+        struct LeakyRelu : ActivationFunctor
+        {
+            std::string name() const override
+            {
+                return "LeakyRelu";
+            }
+
+            double operator()(const double x) const override
+            {
+                if(x >= 0)
+                {
+                    return x;
+                }
+                else
+                {
+                    return 0.01 * x; // f(y) = a*y -> when a is not 0.01 than it's called Randomized ReLU as per: https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6
+                }
+            }
+        };
+    }
 }
-
 #endif

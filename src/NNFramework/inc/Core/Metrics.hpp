@@ -4,71 +4,74 @@
 #include <string>
 #include "../Eigen/Dense"
 
-namespace Metrics
+namespace NNFramework
 {
-    template<class TypeName> struct MetricsType { typedef TypeName T; }; 
-
-    struct MetricsFunctor
+    namespace Metrics
     {
-        virtual std::string name() const = 0;
-        virtual double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const = 0;
-    };
+        template<class TypeName> struct MetricsType { typedef TypeName T; }; 
 
-    struct ClassificationAccuracy : MetricsFunctor
-    {
-        std::string name()
+        struct MetricsFunctor
         {
-            return "ClassificationAccuracy";
-        }
+            virtual std::string name() const = 0;
+            virtual double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const = 0;
+        };
 
-        // param: x -> expected
-        // param: y -> predicted
-        // acc = correct / noofpred
-        double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+        struct ClassificationAccuracy : MetricsFunctor
         {
-            
-            
+            std::string name()
+            {
+                return "ClassificationAccuracy";
+            }
 
-            return 0.0;
-        }
-    };
+            // param: x -> expected
+            // param: y -> predicted
+            // acc = correct / noofpred
+            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            {
+                
+                
 
-    struct MeanSquaredError : MetricsFunctor
-    {
-        std::string name() const
+                return 0.0;
+            }
+        };
+
+        struct MeanSquaredError : MetricsFunctor
         {
-            return "MeanSquaredError";
-        }
+            std::string name() const
+            {
+                return "MeanSquaredError";
+            }
 
-        // param: x -> expected
-        // param: y -> predicted
-        double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            // param: x -> expected
+            // param: y -> predicted
+            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            {
+                Eigen::VectorXd diffSquared = x - y;
+                diffSquared = diffSquared.cwiseProduct(diffSquared);
+                
+                return (diffSquared.sum() / diffSquared.size());
+            }      
+        };
+
+        struct MeanAbsoluteError : MetricsFunctor
         {
-            Eigen::VectorXd diffSquared = x - y;
-            diffSquared = diffSquared.cwiseProduct(diffSquared);
-            
-            return (diffSquared.sum() / diffSquared.size());
-        }      
-    };
+            std::string name() const
+            {
+                return "MeanAbsoluteError";
+            }
 
-    struct MeanAbsoluteError : MetricsFunctor
-    {
-        std::string name() const
-        {
-            return "MeanAbsoluteError";
-        }
+            // param: x -> expected
+            // param: y -> predicted
+            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            {
+                Eigen::VectorXd diffAbs = x - y;
+                diffAbs = diffAbs.cwiseAbs();
 
-        // param: x -> expected
-        // param: y -> predicted
-        double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
-        {
-            Eigen::VectorXd diffAbs = x - y;
-            diffAbs = diffAbs.cwiseAbs();
+                return (diffAbs.sum() / diffAbs.size());
+            }      
+        };
 
-            return (diffAbs.sum() / diffAbs.size());
-        }      
-    };
-
+    }
 }
 
 #endif

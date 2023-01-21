@@ -24,6 +24,8 @@ void plotTest()
     show();
 }
 
+using namespace NNFramework;
+
 int main()
 {
     Model model;
