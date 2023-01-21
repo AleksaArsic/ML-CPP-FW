@@ -9,6 +9,8 @@ project(NNFramework_test VERSION 1.0.0)
 include_directories(inc)
 
 add_subdirectory(src/NNFramework) # add NNFramework project
+add_subdirectory(src/matplotplusplus)
 
 add_executable(NNFramework_test src/main.cpp)
 target_link_libraries(NNFramework_test PUBLIC NNFramework) # link NNFramework library 
+target_link_libraries(NNFramework_test PUBLIC matplot) # link matplotplusplus

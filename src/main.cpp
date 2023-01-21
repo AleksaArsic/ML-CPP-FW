@@ -7,8 +7,8 @@
 
 #include <cmath>
 
-//#include <matplot/matplot.h>
-#if 0
+#include <matplot/matplot.h>
+
 void plotTest()
 {
     using namespace matplot;
@@ -23,7 +23,6 @@ void plotTest()
 
     show();
 }
-#endif
 
 int main()
 {
@@ -52,7 +51,7 @@ int main()
     Loss::BinaryCrossEntropy bce;
     std::cout << bce(expected, predicted) << std::endl;
 
-    //plotTest();
+    plotTest();
 
 #if 0
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(3, 2);
