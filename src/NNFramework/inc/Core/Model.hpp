@@ -1,10 +1,10 @@
-#ifndef MODEL_HPP
-#define MODEL_HPP
+#ifndef MODEL_CORE_HPP
+#define MODEL_CORE_HPP
 
 #include <memory>
 #include <vector>
 #include <iostream>
-#include <Eigen/Dense>
+#include "../Eigen/Dense"
 #include "Activations.hpp"
 #include "Loss.hpp"
 
@@ -79,7 +79,7 @@ class Model
         template<class T>
         bool compileModel(Loss::LossType<T>)
         {
-            // bind loss functor to model
+            // bind loss functor to the neural network model
             mLossPtr = std::make_unique<T>();
 
             // initialize all layers coefficients

@@ -1,9 +1,8 @@
-#ifndef LOSS_HPP
-#define LOSS_HPP
+#ifndef LOSS_CORE_HPP
+#define LOSS_CORE_HPP
 
 #include <string>
-#include <algorithm>
-#include "Eigen/Dense"
+#include "../Eigen/Dense"
 
 namespace Loss
 {

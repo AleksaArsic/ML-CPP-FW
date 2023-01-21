@@ -1,5 +1,5 @@
-#ifndef ACTIVATIONS_HPP
-#define ACTIVATIONS_HPP
+#ifndef ACTIVATIONS_CORE_HPP
+#define ACTIVATIONS_CORE_HPP
 
 #include <cmath>
 #include <string>

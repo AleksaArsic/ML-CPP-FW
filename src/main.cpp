@@ -1,11 +1,29 @@
 #include <iostream>
 #include <vector>
-#include "Eigen/Dense"
-#include "Activations.hpp"
-#include "Loss.hpp"
-#include "Model.hpp"
+#include "NNFramework/inc/Eigen/Dense"
+#include "NNFramework/Activations"
+#include "NNFramework/Loss"
+#include "NNFramework/Model"
 
 #include <cmath>
+
+//#include <matplot/matplot.h>
+#if 0
+void plotTest()
+{
+    using namespace matplot;
+    std::vector<double> x = linspace(0, 2 * pi);
+    std::vector<double> y = transform(x, [](auto x) { return sin(x); });
+
+    plot(x, y, "-o");
+    hold(on);
+    plot(x, transform(y, [](auto y) { return -y; }), "--xr");
+    plot(x, transform(x, [](auto x) { return x / pi - 1.; }), "-:gs");
+    plot({1.0, 0.7, 0.4, 0.0, -0.4, -0.7, -1}, "k");
+
+    show();
+}
+#endif
 
 int main()
 {
@@ -33,6 +51,8 @@ int main()
 
     Loss::BinaryCrossEntropy bce;
     std::cout << bce(expected, predicted) << std::endl;
+
+    //plotTest();
 
 #if 0
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(3, 2);

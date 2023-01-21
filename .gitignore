@@ -36,3 +36,6 @@
 
 # .csv files
 *.csv
+
+# build directory
+build/*
