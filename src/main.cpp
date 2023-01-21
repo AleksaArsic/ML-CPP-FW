@@ -1,28 +1,11 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "NNFramework/inc/Eigen/Dense"
 #include "NNFramework/Activations"
 #include "NNFramework/Loss"
 #include "NNFramework/Model"
-
-#include <cmath>
-
-#include <matplot/matplot.h>
-
-void plotTest()
-{
-    using namespace matplot;
-    std::vector<double> x = linspace(0, 2 * pi);
-    std::vector<double> y = transform(x, [](auto x) { return sin(x); });
-
-    plot(x, y, "-o");
-    hold(on);
-    plot(x, transform(y, [](auto y) { return -y; }), "--xr");
-    plot(x, transform(x, [](auto x) { return x / pi - 1.; }), "-:gs");
-    plot({1.0, 0.7, 0.4, 0.0, -0.4, -0.7, -1}, "k");
-
-    show();
-}
+#include "Utilities.hpp"
 
 using namespace NNFramework;
 
@@ -53,19 +36,10 @@ int main()
     Loss::BinaryCrossEntropy bce;
     std::cout << bce(expected, predicted) << std::endl;
 
-    plotTest();
-
-#if 0
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(3, 2);
-    Eigen::VectorXd layerOutputZ = Eigen::VectorXd(2);
-    layerOutputZ << 3.23,
-                    -3.23;
-
-    std::cout << m << std::endl;
-    std::cout << m * layerOutputZ << std::endl;
-
-    std::cout << "Sigmoid: " << layerOutputZ.unaryExpr(Activations::Sigmoid()) << std::endl;
-#endif
+    // read input data and labels from input file
+    std::tuple loadedData = loadData("./data/input_data.txt");
+    Eigen::VectorXd inData = std::get<0>(loadedData);
+    Eigen::VectorXd labelsData = std::get<1>(loadedData);
 
     // unfinished
     //model.saveModel();
