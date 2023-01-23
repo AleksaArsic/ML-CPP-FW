@@ -41,6 +41,11 @@ int main()
     Eigen::VectorXd inData = std::get<0>(loadedData);
     Eigen::VectorXd labelsData = std::get<1>(loadedData);
 
+    // sort data based on xi values for the purposes of graph plotting 
+    std::tuple sortedData = sortData(inData, labelsData);
+
+    plotData(sortedData);
+
     // unfinished
     //model.saveModel();
 

@@ -6,21 +6,49 @@
 #include "matplot/matplot.h"
 #include "../src/NNFramework/inc/Eigen/Dense" // ugly ? 
 
-void plotTest()
+void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd> data, std::string savePath = "img/graph")
 {
     using namespace matplot;
-    std::vector<double> x = linspace(0, 2 * pi);
-    std::vector<double> y = transform(x, [](auto x) { return sin(x); });
+    auto f = figure(true);
 
-    plot(x, y, "-o");
-    hold(on);
-    plot(x, transform(y, [](auto y) { return -y; }), "--xr");
-    plot(x, transform(x, [](auto x) { return x / pi - 1.; }), "-:gs");
-    plot({1.0, 0.7, 0.4, 0.0, -0.4, -0.7, -1}, "k");
+    plot(std::get<0>(data), std::get<1>(data));
 
-    show();
+    save("graph", "png"); // currently is not supported by the matplot++ library
+    show();               // use show instead
 }
 
+// used for sorting pairs of (xi, yi)
+std::tuple<Eigen::VectorXd, Eigen::VectorXd> sortData(Eigen::VectorXd inData, Eigen::VectorXd outData)
+{
+
+    if(inData.size() != outData.size())
+    {
+        throw "Size of the input Eigen::VectorXd's are not the same! Data cannot be sorted.";
+    }
+    else
+    {  
+        std::map<double, double> data;
+        Eigen::VectorXd inDataSorted(inData.size());
+        Eigen::VectorXd outDataSorted(outData.size());
+
+        for (uint32_t i = 0; i < inData.size(); i++)
+        {   
+            // map is automatically sorted by key value
+            data.insert(std::make_pair(inData[i], outData[i]));
+        }
+
+        uint32_t i = 0;
+        for (const auto& [key, value] : data)
+        {
+            inData[i] = key;
+            outData[i++] = value;
+        }
+
+        return std::make_tuple(inData, outData);
+    }
+}
+
+// Load data from the input file to Eigen::VectorXd's
 std::tuple<Eigen::VectorXd, Eigen::VectorXd> loadData(const std::string path)
 {
     std::fstream inputFile;
@@ -53,6 +81,8 @@ std::tuple<Eigen::VectorXd, Eigen::VectorXd> loadData(const std::string path)
 
         return std::make_tuple(inEigenV, expEigenV);
     }
-
-    return std::make_tuple(Eigen::VectorXd(), Eigen::VectorXd());
+    else
+    {
+        throw "Input file is not opened.";
+    }
 }
