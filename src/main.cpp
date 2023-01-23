@@ -35,7 +35,6 @@ int main()
 
     Loss::BinaryCrossEntropy bce;
     std::cout << bce(expected, predicted) << std::endl;
-
     // read input data and labels from input file
     std::tuple loadedData = loadData("./data/input_data.txt");
     Eigen::VectorXd inData = std::get<0>(loadedData);

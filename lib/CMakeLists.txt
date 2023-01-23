@@ -1,0 +1,2 @@
+add_subdirectory(NNFramework)
+add_subdirectory(matplotplusplus)

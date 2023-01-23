@@ -4,7 +4,7 @@
 #include <sstream>
 #include <tuple>
 #include "matplot/matplot.h"
-#include "../src/NNFramework/inc/Eigen/Dense" // ugly ? 
+#include "NNFramework/inc/Eigen/Dense"
 
 void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd> data, std::string savePath = "img/graph")
 {

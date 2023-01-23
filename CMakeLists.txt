@@ -6,11 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(NNFramework_test VERSION 1.0.0)
 
-include_directories(inc)
-
-add_subdirectory(src/NNFramework) # add NNFramework project
-add_subdirectory(src/matplotplusplus)
+add_subdirectory(lib)
 
 add_executable(NNFramework_test src/main.cpp)
+target_include_directories(NNFramework_test PRIVATE inc)
+target_link_libraries(NNFramework_test PUBLIC matplot)     # link matplotplusplus
 target_link_libraries(NNFramework_test PUBLIC NNFramework) # link NNFramework library 
-target_link_libraries(NNFramework_test PUBLIC matplot) # link matplotplusplus
