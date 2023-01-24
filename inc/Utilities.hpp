@@ -6,15 +6,19 @@
 #include "matplot/matplot.h"
 #include "NNFramework/inc/Eigen/Dense"
 
-void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd> data, std::string savePath = "img/graph")
+//void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd> data, std::string savePath = "img/graph")
+void plotData()
 {
     using namespace matplot;
     auto f = figure(true);
 
-    plot(std::get<0>(data), std::get<1>(data));
+    //plot(std::get<0>(data), std::get<1>(data));
 
-    save("graph", "png"); // currently is not supported by the matplot++ library
-    show();               // use show instead
+    plot({0, 1, 2, 3}, {0, 1, 2, 3});
+
+    std::string filename = "./test.pdf";
+    save(filename); // currently is not supported by the matplot++ library
+    //show();               // use show instead
 }
 
 // used for sorting pairs of (xi, yi)

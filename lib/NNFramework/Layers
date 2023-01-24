@@ -1,0 +1,6 @@
+#ifndef LAYERS_HPP
+#define LAYERS_HPP
+
+#include "NNFramework/inc/Core/Layers.hpp"
+
+#endif

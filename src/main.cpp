@@ -4,6 +4,7 @@
 #include "NNFramework/inc/Eigen/Dense"
 #include "NNFramework/Activations"
 #include "NNFramework/Loss"
+#include "NNFramework/Layers"
 #include "NNFramework/Model"
 #include "Utilities.hpp"
 
@@ -13,9 +14,9 @@ int main()
 {
     Model model;
 
-    model.addLayer(Layer(3)); // or -> model.addLayer(Layer(3, Activations::ActivationType<Activations::InputActivation>()));
-    model.addLayer(Layer(4, Activations::ActivationType<Activations::Relu>()));
-    model.addLayer(Layer(3, Activations::ActivationType<Activations::LeakyRelu>()));
+    model.addLayer(Layers::Dense(3)); // or -> model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::InputActivation>()));
+    model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Relu>()));
+    model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::LeakyRelu>()));
 
     model.compileModel(Loss::LossType<Loss::MeanAbsoluteError>());
     model.modelSummary();
@@ -33,6 +34,8 @@ int main()
                 1,
                 1;
 
+
+#if 0
     Loss::BinaryCrossEntropy bce;
     std::cout << bce(expected, predicted) << std::endl;
     // read input data and labels from input file
@@ -42,8 +45,10 @@ int main()
 
     // sort data based on xi values for the purposes of graph plotting 
     std::tuple sortedData = sortData(inData, labelsData);
+#endif
 
-    plotData(sortedData);
+    //plotData(sortedData);
+    plotData();
 
     // unfinished
     //model.saveModel();

@@ -15,6 +15,7 @@ add_library(NNFramework ${_HDRS} ${_SRCS}
             Activations
             Loss
             Metrics
+            Layers
             Model
             )
 

@@ -6,13 +6,13 @@
 namespace NNFramework
 {
     // Add new layer to the NN Model
-    bool Model::addLayer(Layer layer)
+    bool Model::addLayer(Layers::Layer layer)
     {
         try
         {
             layer.set_mLayerId(this->mLayersNo++);
 
-            this->mLayers.push_back(std::move(std::make_unique<Layer>(layer)));
+            this->mLayers.push_back(std::move(std::make_unique<Layers::Layer>(std::move(layer))));
 
             return true;
         }
@@ -103,7 +103,15 @@ namespace NNFramework
     // Train compiled model
     void Model::modelFit()
     {
+        // For number of provided epochs train the model
+        
+        // forward pass
 
+        // backpropagation
+
+        // calculate losses
+
+        // calculate metrics
     }
 
     // Trained model predict on provided input data
