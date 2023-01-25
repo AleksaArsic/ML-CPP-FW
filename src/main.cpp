@@ -21,34 +21,21 @@ int main()
     model.compileModel(Loss::LossType<Loss::MeanAbsoluteError>());
     model.modelSummary();
 
-    Eigen::VectorXd predicted = Eigen::VectorXd(4);
-    Eigen::VectorXd expected = Eigen::VectorXd(4);
-
-    predicted << 0.8,
-                0.7,
-                0.3,
-                0.9;
-
-    expected << 1,
-                0,
-                1,
-                1;
-
-
-#if 0
-    Loss::BinaryCrossEntropy bce;
-    std::cout << bce(expected, predicted) << std::endl;
     // read input data and labels from input file
-    std::tuple loadedData = loadData("./data/input_data.txt");
-    Eigen::VectorXd inData = std::get<0>(loadedData);
-    Eigen::VectorXd labelsData = std::get<1>(loadedData);
+    std::tuple loadedData = loadData("./data/input_data.txt", 200, 1, 1);
+    Eigen::MatrixXd inData = std::get<0>(loadedData);
+    Eigen::MatrixXd labelsData = std::get<1>(loadedData);
+
+    Eigen::MatrixXd dummyInData(1, 3);
+    dummyInData << 1, 2, 3;
+    model.modelFit(dummyInData, 1);
 
     // sort data based on xi values for the purposes of graph plotting 
-    std::tuple sortedData = sortData(inData, labelsData);
-#endif
+    //std::tuple sortedData = sortData(inData, labelsData);
 
+    // can't export graphs???
     //plotData(sortedData);
-    plotData();
+    //plotData();
 
     // unfinished
     //model.saveModel();

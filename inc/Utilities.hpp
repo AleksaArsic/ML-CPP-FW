@@ -22,7 +22,8 @@ void plotData()
 }
 
 // used for sorting pairs of (xi, yi)
-std::tuple<Eigen::VectorXd, Eigen::VectorXd> sortData(Eigen::VectorXd inData, Eigen::VectorXd outData)
+// Function is specific for the given input format in data/input_data.txt
+std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> sortData(Eigen::VectorXd inData, Eigen::VectorXd outData)
 {
 
     if(inData.size() != outData.size())
@@ -32,10 +33,10 @@ std::tuple<Eigen::VectorXd, Eigen::VectorXd> sortData(Eigen::VectorXd inData, Ei
     else
     {  
         std::map<double, double> data;
-        Eigen::VectorXd inDataSorted(inData.size());
-        Eigen::VectorXd outDataSorted(outData.size());
+        Eigen::MatrixXd inDataSorted(inData.rows(), inData.cols());
+        Eigen::MatrixXd outDataSorted(outData.rows(), outData.cols());
 
-        for (uint32_t i = 0; i < inData.size(); i++)
+        for (uint32_t i = 0; i < inData.size(); ++i)
         {   
             // map is automatically sorted by key value
             data.insert(std::make_pair(inData[i], outData[i]));
@@ -52,8 +53,10 @@ std::tuple<Eigen::VectorXd, Eigen::VectorXd> sortData(Eigen::VectorXd inData, Ei
     }
 }
 
-// Load data from the input file to Eigen::VectorXd's
-std::tuple<Eigen::VectorXd, Eigen::VectorXd> loadData(const std::string path)
+// Load data from the input file to Eigen::MatrixXd's
+// Function is specific for the given input format in data/input_data.txt
+// where delimiter is blank space character ' '
+std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> loadData(const std::string path, uint32_t sampleNo, uint8_t inCol, uint8_t expCol)
 {
     std::fstream inputFile;
 
@@ -62,28 +65,31 @@ std::tuple<Eigen::VectorXd, Eigen::VectorXd> loadData(const std::string path)
     if (inputFile.is_open())
     { 
         std::string line;
-        std::vector<double> inDataVec;
-        std::vector<double> expDataVec;
+        Eigen::MatrixXd inData = Eigen::MatrixXd::Zero(sampleNo, inCol);
+        Eigen::MatrixXd expData = Eigen::MatrixXd::Zero(sampleNo, expCol);
 
+        uint32_t i = 0;
         while(getline(inputFile, line)) // parse one line of the file
         {
             std::stringstream s(line);
-            double inputVal;
-            double expectedVal;
 
-            s >> inputVal >> expectedVal;
-
-            inDataVec.push_back(inputVal);
-            expDataVec.push_back(expectedVal);
+            for(uint32_t j = 0; j < (inCol + expCol); j++)
+            {
+                if(j < inCol)
+                {
+                    s >> inData(i, j);
+                }
+                else
+                {
+                    s >> expData(i, j - inCol);
+                }
+            }
+            i++;
         }
 
         inputFile.close(); // close the file object.
 
-        // convert std::vector<double> to Eigen::VectorXd
-        Eigen::VectorXd inEigenV = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(inDataVec.data(), inDataVec.size());
-        Eigen::VectorXd expEigenV = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(expDataVec.data(), expDataVec.size());
-
-        return std::make_tuple(inEigenV, expEigenV);
+        return std::make_tuple(inData, expData);
     }
     else
     {

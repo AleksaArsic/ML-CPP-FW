@@ -7,8 +7,8 @@ namespace NNFramework
         Layer::Layer(const uint8_t perceptronNo) : mLayerId(0), mPerceptronNo(perceptronNo), mLearnableCoeffs(0)
         {
             mLayerWeights = std::make_shared<Eigen::MatrixXd>();
-            mLayerZ = std::make_shared<Eigen::VectorXd>();
-            mLayerBias = std::make_shared<Eigen::VectorXd>();
+            mLayerZ = std::make_shared<Eigen::MatrixXd>();
+            mLayerBias = std::make_shared<Eigen::MatrixXd>();
             mActivationPtr = nullptr;
         }
 

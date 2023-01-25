@@ -15,7 +15,6 @@ namespace NNFramework
         // Dense, Convolutive, Flatten, ...
         // With this we achieve greater modularity of the code as we will have a possibility to simply
         // inherit base functionality of the one layer.
-        // For simplicity mLayerZ and mLayerBias are declared as Eigen::VectorXd (in essence Eigen::MatrixXd).
         // This also gives a possibility to the NN Model to have a pointer to the base class 
         // where layers of different types will be instantiated.
         class Layer
@@ -33,8 +32,8 @@ namespace NNFramework
                 uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
 
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerWeights() const noexcept { return this->mLayerWeights; }
-                std::shared_ptr<Eigen::VectorXd> get_mLayerZ() const noexcept { return this->mLayerZ; }
-                std::shared_ptr<Eigen::VectorXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
+                std::shared_ptr<Eigen::MatrixXd> get_mLayerZ() const noexcept { return this->mLayerZ; }
+                std::shared_ptr<Eigen::MatrixXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
 
                 // Setters
                 void set_mLayerId(uint8_t id) { this->mLayerId = id; }
@@ -45,8 +44,8 @@ namespace NNFramework
 
             protected:
                 std::shared_ptr<Eigen::MatrixXd> mLayerWeights;
-                std::shared_ptr<Eigen::VectorXd> mLayerZ;
-                std::shared_ptr<Eigen::VectorXd> mLayerBias;
+                std::shared_ptr<Eigen::MatrixXd> mLayerZ;
+                std::shared_ptr<Eigen::MatrixXd> mLayerBias;
                 
                 uint8_t mLayerId;
                 uint8_t mPerceptronNo;

@@ -29,7 +29,7 @@ namespace NNFramework
                 mLossPtr = std::make_unique<T>();
 
                 // initialize all layers coefficients
-                this->initializeLayers();
+                this->_initializeLayers();
 
                 // set model compiled 
                 this->mIsCompiled = true;
@@ -44,7 +44,14 @@ namespace NNFramework
             bool loadModel();
             
             // Train desired model
-            void modelFit();
+            // Expected input:
+            // Eigen::MatrixXd
+            // Data:
+            // 1)   [x11, x12, ..., x1m]
+            // 2)   [x21, x22, ..., x2m]
+            // ...
+            // n)   [xn1, xn2, ..., xnm]
+            void modelFit(const Eigen::MatrixXd inputData, const uint32_t epochs);
 
             // Trained model predict on provided input data
             void modelPredict() const;
@@ -66,7 +73,10 @@ namespace NNFramework
             bool mIsCompiled;
 
             // Initialize all layers coefficients
-            void initializeLayers();
+            void _initializeLayers();
+
+            // Forward pass
+            void _forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId);
     };
 }
 
