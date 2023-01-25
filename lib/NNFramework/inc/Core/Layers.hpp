@@ -23,8 +23,10 @@ namespace NNFramework
                 Layer() = delete;
                 Layer(Layer& l) = delete;
 
-                Layer(const uint8_t perceptronNo);
                 Layer(Layer&& l);
+
+                // Delete copy assignment operator
+                Layer& operator=(const Layer& l) = delete;
 
                 // Getters
                 uint8_t get_mPerceptronNo() const noexcept { return this->mPerceptronNo; }
@@ -43,6 +45,8 @@ namespace NNFramework
                 std::unique_ptr<Activations::ActivationFunctor> mActivationPtr;
 
             protected:
+                Layer(const uint8_t perceptronNo); // Hide constructor from outside world, only classes inheriting Layer can construct Layers::Layer
+
                 std::shared_ptr<Eigen::MatrixXd> mLayerWeights;
                 std::shared_ptr<Eigen::MatrixXd> mLayerZ;
                 std::shared_ptr<Eigen::MatrixXd> mLayerBias;
@@ -58,7 +62,13 @@ namespace NNFramework
         class Dense : public Layer
         {
             public:
+                Dense() = delete;
+                Dense(Dense& d) = delete;
+
                 Dense(const uint8_t perceptronNo);
+
+                // Delete copy assignment operator
+                Dense& operator=(const Dense& d) = delete;
 
                 template<class T>
                 Dense(const uint8_t perceptronNo, Activations::ActivationType<T>) : Dense(perceptronNo)
