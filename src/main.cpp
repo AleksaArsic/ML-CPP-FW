@@ -1,11 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include "NNFramework/inc/Eigen/Dense"
-#include "NNFramework/Activations"
-#include "NNFramework/Loss"
-#include "NNFramework/Layers"
-#include "NNFramework/Model"
+#include "NNFramework/NNFramework"
 #include "Utilities.hpp"
 
 using namespace NNFramework;

@@ -12,11 +12,7 @@ file(GLOB_RECURSE _HDRS "inc/*.hpp")
 file(GLOB_RECURSE _SRCS "src/*.[hc]pp")
 
 add_library(NNFramework ${_HDRS} ${_SRCS}
-            Activations
-            Loss
-            Metrics
-            Layers
-            Model
+            NNFramework
             )
 
 target_include_directories(NNFramework INTERFACE .. )

@@ -1,0 +1,14 @@
+#ifndef NNFRAMEWORK_HPP
+#define NNFRAMEWORK_HPP
+
+// Include NNFramework Core modules
+#include "inc/Core/Model.hpp"
+#include "inc/Core/Layers.hpp"
+#include "inc/Core/Activations.hpp"
+#include "inc/Core/Loss.hpp"
+#include "inc/Core/Metrics.hpp"
+
+// Include Eigen as it comes as a part of the NNFramework
+#include "inc/Eigen/Dense"
+
+#endif

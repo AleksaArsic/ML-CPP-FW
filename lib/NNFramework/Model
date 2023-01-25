@@ -1,6 +1,0 @@
-#ifndef MODEL_HPP
-#define MODEL_HPP
-
-#include "inc/Core/Model.hpp"
-
-#endif

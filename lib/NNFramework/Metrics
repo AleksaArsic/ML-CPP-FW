@@ -1,6 +1,0 @@
-#ifndef METRICS_HPP
-#define METRICS_HPP
-
-#include "inc/Core/Metrics.hpp"
-
-#endif

@@ -1,6 +1,0 @@
-#ifndef ACTIVATIONS_HPP
-#define ACTIVATIONS_HPP
-
-#include "NNFramework/inc/Core/Activations.hpp"
-
-#endif
