@@ -51,7 +51,7 @@ namespace NNFramework
             // 2)   [x21, x22, ..., x2m]
             // ...
             // n)   [xn1, xn2, ..., xnm]
-            void modelFit(const Eigen::MatrixXd inputData, const uint32_t epochs);
+            void modelFit(const Eigen::MatrixXd inputData, Eigen::MatrixXd expectedData, const uint32_t epochs);
 
             // Trained model predict on provided input data
             void modelPredict() const;

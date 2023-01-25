@@ -73,7 +73,7 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> loadData(const std::string path, ui
         {
             std::stringstream s(line);
 
-            for(uint32_t j = 0; j < (inCol + expCol); j++)
+            for(uint32_t j = 0; j < (inCol + expCol); ++j)
             {
                 if(j < inCol)
                 {

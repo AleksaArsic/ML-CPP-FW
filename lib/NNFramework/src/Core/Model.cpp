@@ -119,8 +119,10 @@ namespace NNFramework
 
 
     // Train compiled model
-    void Model::modelFit(const Eigen::MatrixXd inputData, const uint32_t epochs)
+    void Model::modelFit(const Eigen::MatrixXd inputData, Eigen::MatrixXd expectedData, const uint32_t epochs)
     {
+        // check if input data and expected data have same number of rows
+
         // For number of provided epochs train the model
         for (uint32_t i = 0; i < epochs; i++)
         {
@@ -129,14 +131,26 @@ namespace NNFramework
             {
                 // forward pass trough NNetwork
                 _forwardPass(inputData, rowIdx);
+                
                 // backpropagation trough NNetwork
 
                 // update layer coefficients
 
-                // calculate losses
 
-                // calculate metrics
             }
+
+            // calculate losses
+            Eigen::MatrixXd outputLayerZ = *(mLayers[mLayersNo - 1]->get_mLayerZ());
+            Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZ.data(), outputLayerZ.cols() * outputLayerZ.rows()));
+            
+            Eigen::VectorXd expectedOutput(Eigen::Map<Eigen::VectorXd>(expectedData.data(), expectedData.cols() * expectedData.rows()));
+           
+            double loss = (*mLossPtr)(modelOutput, expectedOutput);
+            
+            std::cout << modelOutput << std::endl;
+            std::cout << "Loss: " << loss << std::endl;
+
+            // calculate metrics
 
             // if the result of current epoch is better than overall best training result
             // save relevant model coefficients
@@ -159,7 +173,7 @@ namespace NNFramework
             std::cout << "Model summary: " << std::endl;
             std::cout << "**************************************" << std::endl;
 
-            for (auto it = mLayers.begin(); it != mLayers.end(); it++)
+            for (auto it = mLayers.begin(); it != mLayers.end(); ++it)
             {
                 std::cout << "Layer: " << static_cast<uint32_t>((*it)->get_mLayerId()) << std::endl;
                 std::cout << "\t Perceptrons = " << static_cast<uint32_t>((*it)->get_mPerceptronNo()) << std::endl;

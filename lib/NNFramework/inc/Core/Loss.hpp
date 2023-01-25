@@ -13,6 +13,9 @@ namespace NNFramework
         struct LossFunctor
         {
             virtual std::string name() const = 0;
+            
+            // param: x -> expected
+            // param: y -> predicted
             virtual double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const = 0;
         };
 

@@ -14,7 +14,7 @@ int main()
     model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Relu>()));
     model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::LeakyRelu>()));
 
-    model.compileModel(Loss::LossType<Loss::MeanAbsoluteError>());
+    model.compileModel(Loss::LossType<Loss::MeanSquaredError>());
     model.modelSummary();
 
     // read input data and labels from input file
@@ -23,8 +23,10 @@ int main()
     Eigen::MatrixXd labelsData = std::get<1>(loadedData);
 
     Eigen::MatrixXd dummyInData(1, 3);
+    Eigen::MatrixXd dummyOutData(1, 3);
     dummyInData << 1, 2, 3;
-    model.modelFit(dummyInData, 1);
+    dummyOutData << 2, 4, 6;
+    model.modelFit(dummyInData, dummyOutData, 1);
 
     // sort data based on xi values for the purposes of graph plotting 
     //std::tuple sortedData = sortData(inData, labelsData);

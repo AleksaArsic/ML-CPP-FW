@@ -18,21 +18,21 @@ namespace NNFramework
 
         struct ClassificationAccuracy : MetricsFunctor
         {
-            std::string name()
-            {
-                return "ClassificationAccuracy";
-            }
+                std::string name()
+                {
+                    return "ClassificationAccuracy";
+                }
 
-            // param: x -> expected
-            // param: y -> predicted
-            // acc = correct / noofpred
-            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
-            {
-                
-                
+                // param: x -> expected
+                // param: y -> predicted
+                // acc = correct / noofpred
+                double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+                {
+                    
+                    
 
-                return 0.0;
-            }
+                    return 0.0;
+                }
         };
 
         struct MeanSquaredError : MetricsFunctor
