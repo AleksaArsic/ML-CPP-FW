@@ -8,6 +8,7 @@
 #include "Layers.hpp"
 #include "Activations.hpp"
 #include "Loss.hpp"
+#include "../Common/Common.hpp"
 
 namespace NNFramework
 {
@@ -125,7 +126,11 @@ namespace NNFramework
             void __initializeLayers();
 
             // Forward pass
-            void __forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId);
+            void __forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx);
+
+            // Calculate loss
+            void __calculateLoss(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
+
     };
 }
 

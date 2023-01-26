@@ -37,7 +37,7 @@ int main()
                     20, 22, 24,
                     26, 28, 30,
                     32, 34, 36;
-    model.modelFit(dummyInData, dummyOutData, 1);
+    model.modelFit(dummyInData, dummyOutData, 5);
     //std::cout << model.modelPredict(dummyInData) << std::endl;
     // sort data based on xi values for the purposes of graph plotting 
     //std::tuple sortedData = sortData(inData, labelsData);
