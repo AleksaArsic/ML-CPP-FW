@@ -18,51 +18,11 @@ namespace NNFramework
         }
         catch(const std::exception& e)
         {
-            std::cerr << "Model.addLayer() operation failed: ";
+            std::cerr << __FUNCTION__ << ": ";
             std::cerr << e.what() << std::endl;
             return false;
         }
         
-    }
-
-    // Initialize all layers coefficients
-    void Model::__initializeLayers()
-    {
-        // iterate trough layers
-        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-        {
-            uint8_t layerId = (*it)->get_mLayerId();
-            uint8_t perceptronNo = (*it)->get_mPerceptronNo();
-            uint8_t prevPercNo = ((0L) == layerId ? perceptronNo : mLayers[layerId - 1]->get_mPerceptronNo());
-    
-            // initialize layer coefficients
-            std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
-            std::shared_ptr<Eigen::MatrixXd> layerZ = (*it)->get_mLayerZ();
-            std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
-
-            *layerZ = Eigen::MatrixXd::Zero(perceptronNo, 1);
-
-            if((0L) == layerId)
-            {
-                // Input layer does not contain Weights, Biases nor Activation
-                *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
-                *layerBias = Eigen::MatrixXd::Zero(perceptronNo, 1);
-
-                (*it)->set_mLearnableCoeffs(0);
-            }
-            else
-            {
-                *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
-                *layerBias = Eigen::MatrixXd::Ones(perceptronNo, 1);
-
-                // calculate learnable coefficients
-                // learnableCoeffs = noOfPerceptrons * (noOfWeights + noOfInputs) + 1 (bias)
-                uint32_t noOfCoeffs = (perceptronNo * (2 * prevPercNo)) + 1;
-
-                (*it)->set_mLearnableCoeffs(noOfCoeffs);
-                mLearnableCoeffs += noOfCoeffs;
-            }
-        }
     }
 
     // Save model weights to desired location
@@ -70,6 +30,7 @@ namespace NNFramework
     {
         try
         {
+            /* Not supported in this version of NNFramework */
             return true;
         }
         catch(const std::exception& e)
@@ -84,49 +45,15 @@ namespace NNFramework
     // Load model weights from desired location
     bool Model::loadModel()
     {
+        /* Not supported in this version of NNFramework */
         return false;
     }
-
-    // Forward pass
-    void Model::__forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId)
-    {
-        // set input layer data
-        std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[0]->get_mLayerZ();
-
-        *inputLayerZ = inputData.row(rowId);
-        (*inputLayerZ).transposeInPlace();
-        
-        // iterate trough layers 
-        // skip first layer, as first (input) layer does not have weights nor activations
-        for (uint32_t i = 1; i < mLayersNo; ++i)
-        {
-            // get previous layer data
-            std::shared_ptr<Eigen::MatrixXd> prevLayerZ = mLayers[i - 1]->get_mLayerZ();
-
-            // get current layer data
-            std::shared_ptr<Eigen::MatrixXd> layerWeights = mLayers[i]->get_mLayerWeights();
-            std::shared_ptr<Eigen::MatrixXd> layerZ = mLayers[i]->get_mLayerZ();
-            std::shared_ptr<Eigen::MatrixXd> layerBias = mLayers[i]->get_mLayerBias();
-
-            // z = Wx + b
-            (*layerZ) = ((*layerWeights) * (*prevLayerZ)) + (*layerBias);
-
-            // apply activation functor to the layer Z values
-            std::reference_wrapper activationFunRef = *(mLayers[i]->mActivationPtr);
-            (*layerZ) = (*layerZ).unaryExpr(activationFunRef);
-        }
-    }
-
 
     // Train compiled model
     void Model::modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs)
     {
         // check if model is compiled
-        if(mIsCompiled == false)
-        {
-            std::cout << "Model.modelFit(): Model is not compiled!" << std::endl;
-            return;
-        }
+        __checkIsModelCompiled(__FUNCTION__);
 
         // check if input data and expected data are empty
         // check if input data and expected data have same number of rows
@@ -170,18 +97,14 @@ namespace NNFramework
     Eigen::MatrixXd Model::modelPredict(Eigen::MatrixXd& inputData)
     {
         // check if model is compiled
-        if(mIsCompiled == false)
-        {
-            std::cout << "Model.modelPredict(): Model is not compiled!" << std::endl;
-            return Eigen::MatrixXd();
-        }      
+        __checkIsModelCompiled(__FUNCTION__);
 
         // check if input data is empty
 
         // start predicting
         uint32_t outputLayerRows = mLayers[mLayersNo - 1]->get_mLayerZ()->rows();
         Eigen::MatrixXd predictedData(inputData.rows(), outputLayerRows);
-        
+         
         // for each data row in inputData
         for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
         {
@@ -225,6 +148,86 @@ namespace NNFramework
         else
         {
             std::cout << "Model.modelSummary(): Model is not compiled!" << std::endl;
+        }
+    }
+
+    // Check if model is compiled
+    void Model::__checkIsModelCompiled(std::string fName)
+    {
+        if(mIsCompiled == false)
+        {
+            std::cout << fName << ": ";
+            throw std::runtime_error("Model is not compiled!");
+        }   
+    }
+
+    // Initialize all layers coefficients
+    void Model::__initializeLayers()
+    {
+        // iterate trough layers
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            uint8_t layerId = (*it)->get_mLayerId();
+            uint8_t perceptronNo = (*it)->get_mPerceptronNo();
+            uint8_t prevPercNo = ((0L) == layerId ? perceptronNo : mLayers[layerId - 1]->get_mPerceptronNo());
+    
+            // initialize layer coefficients
+            std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
+            std::shared_ptr<Eigen::MatrixXd> layerZ = (*it)->get_mLayerZ();
+            std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
+
+            *layerZ = Eigen::MatrixXd::Zero(perceptronNo, 1);
+
+            if((0L) == layerId)
+            {
+                // Input layer does not contain Weights, Biases nor Activation
+                *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
+                *layerBias = Eigen::MatrixXd::Zero(perceptronNo, 1);
+
+                (*it)->set_mLearnableCoeffs(0);
+            }
+            else
+            {
+                *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
+                *layerBias = Eigen::MatrixXd::Ones(perceptronNo, 1);
+
+                // calculate learnable coefficients
+                // learnableCoeffs = noOfPerceptrons * (noOfWeights + noOfInputs) + 1 (bias)
+                uint32_t noOfCoeffs = (perceptronNo * (2 * prevPercNo)) + 1;
+
+                (*it)->set_mLearnableCoeffs(noOfCoeffs);
+                mLearnableCoeffs += noOfCoeffs;
+            }
+        }
+    }
+
+    // Forward pass
+    void Model::__forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId)
+    {
+        // set input layer data
+        std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[0]->get_mLayerZ();
+
+        *inputLayerZ = inputData.row(rowId);
+        (*inputLayerZ).transposeInPlace();
+        
+        // iterate trough layers 
+        // skip first layer, as first (input) layer does not have weights nor activations
+        for (uint32_t i = 1; i < mLayersNo; ++i)
+        {
+            // get previous layer data
+            std::shared_ptr<Eigen::MatrixXd> prevLayerZ = mLayers[i - 1]->get_mLayerZ();
+
+            // get current layer data
+            std::shared_ptr<Eigen::MatrixXd> layerWeights = mLayers[i]->get_mLayerWeights();
+            std::shared_ptr<Eigen::MatrixXd> layerZ = mLayers[i]->get_mLayerZ();
+            std::shared_ptr<Eigen::MatrixXd> layerBias = mLayers[i]->get_mLayerBias();
+
+            // z = Wx + b
+            (*layerZ) = ((*layerWeights) * (*prevLayerZ)) + (*layerBias);
+
+            // apply activation functor to the layer Z values
+            std::reference_wrapper activationFunRef = *(mLayers[i]->mActivationPtr);
+            (*layerZ) = (*layerZ).unaryExpr(activationFunRef);
         }
     }
 }

@@ -83,6 +83,7 @@ namespace NNFramework
             // Getters
             uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
             uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
+            bool get_mIsCompiled() const noexcept { return this->mIsCompiled; }
 
         private:
             // saves model training history
@@ -100,6 +101,9 @@ namespace NNFramework
             uint32_t mLearnableCoeffs;
             uint8_t mLayersNo;
             bool mIsCompiled;
+
+            // Check if model is compiled
+            void __checkIsModelCompiled(std::string fName);
 
             // Initialize all layers coefficients
             void __initializeLayers();

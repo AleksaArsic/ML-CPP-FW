@@ -14,7 +14,7 @@ int main()
     model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Relu>()));
     model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::LeakyRelu>()));
 
-    model.compileModel(Loss::LossType<Loss::MeanSquaredError>());
+    //model.compileModel(Loss::LossType<Loss::MeanSquaredError>());
     model.modelSummary();
 
     // read input data and labels from input file
