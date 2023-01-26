@@ -67,7 +67,15 @@ namespace NNFramework
             void modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs);
 
             // Trained model predict on provided input data
-            // Expected output:
+            // Expected inputData format:
+            // Eigen::MatrixXd
+            // Data:
+            // 1)   [x11, x12, ..., x1m]
+            // 2)   [x21, x22, ..., x2m]
+            // ...
+            // n)   [xn1, xn2, ..., xnm]
+            // 
+            // Return value data format:
             // Eigen::MatrixXd
             // Data:
             // 1)   [y11, y12, ..., y1m]
@@ -90,10 +98,10 @@ namespace NNFramework
             // Loss, Validation Loss, Accuracy and Validation Accuracy
             struct ModelHistory
             {
-                std::vector<double> hLoss;
-                std::vector<double> hValLoss;
-                std::vector<double> hAccuracy;
-                std::vector<double> hValAccuracy;
+                Eigen::MatrixXd hLoss;
+                Eigen::MatrixXd hValLoss;
+                Eigen::MatrixXd hAccuracy;
+                Eigen::MatrixXd hValAccuracy;
             };
 
             ModelHistory mHistory;
@@ -103,7 +111,15 @@ namespace NNFramework
             bool mIsCompiled;
 
             // Check if model is compiled
-            void __checkIsModelCompiled(std::string fName);
+            void __checkIsModelCompiled(std::string fName) const;
+
+            // Check if data matrix (Eigen::MatrixXd) is empty
+            // throws an exception if data matrix is empty
+            void __isDataEmpty(std::string fName, Eigen::MatrixXd data) const;
+
+            // Check if input data and expected data have the same amount of rows
+            // Check if there is a pair for each input data tensor in expected data and vice versa
+            void __checkInExpectedRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const;
 
             // Initialize all layers coefficients
             void __initializeLayers();

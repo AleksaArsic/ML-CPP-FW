@@ -56,13 +56,17 @@ namespace NNFramework
         __checkIsModelCompiled(__FUNCTION__);
 
         // check if input data and expected data are empty
+        __isDataEmpty(__FUNCTION__, inputData);
+        __isDataEmpty(__FUNCTION__, expectedData);
+
         // check if input data and expected data have same number of rows
+        __checkInExpectedRowDim(__FUNCTION__, inputData, expectedData);
 
         // For number of provided epochs train the model
         for (uint32_t i = 0; i < epochs; i++)
         {
             // for each data row in inputData
-            for (uint32_t rowIdx = 0; rowIdx < 1/*inputData.rows()*/; rowIdx++)
+            for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
             {
                 // forward pass trough NNetwork
                 __forwardPass(inputData, rowIdx);
@@ -71,19 +75,19 @@ namespace NNFramework
 
                 // update layer coefficients
 
+                // calculate losses
+                Eigen::MatrixXd outputLayerZ = *(mLayers[mLayersNo - 1]->get_mLayerZ());
+                Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZ.data(), outputLayerZ.cols() * outputLayerZ.rows()));
+                
+                Eigen::VectorXd expectedOutput = expectedData.row(rowIdx);
+            
+                std::cout << expectedOutput << std::endl;
+                double loss = (*mLossPtr)(modelOutput, expectedOutput);
+                
+                std::cout << modelOutput << std::endl;
+                std::cout << "Loss: " << loss << std::endl;
 
             }
-
-            // calculate losses
-            Eigen::MatrixXd outputLayerZ = *(mLayers[mLayersNo - 1]->get_mLayerZ());
-            Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZ.data(), outputLayerZ.cols() * outputLayerZ.rows()));
-            
-            Eigen::VectorXd expectedOutput(Eigen::Map<Eigen::VectorXd>(expectedData.data(), expectedData.cols() * expectedData.rows()));
-           
-            double loss = (*mLossPtr)(modelOutput, expectedOutput);
-            
-            std::cout << modelOutput << std::endl;
-            std::cout << "Loss: " << loss << std::endl;
 
             // calculate metrics
 
@@ -100,6 +104,7 @@ namespace NNFramework
         __checkIsModelCompiled(__FUNCTION__);
 
         // check if input data is empty
+        __isDataEmpty(__FUNCTION__, inputData);
 
         // start predicting
         uint32_t outputLayerRows = mLayers[mLayersNo - 1]->get_mLayerZ()->rows();
@@ -152,13 +157,36 @@ namespace NNFramework
     }
 
     // Check if model is compiled
-    void Model::__checkIsModelCompiled(std::string fName)
+    void Model::__checkIsModelCompiled(std::string fName) const
     {
         if(mIsCompiled == false)
         {
             std::cout << fName << ": ";
             throw std::runtime_error("Model is not compiled!");
         }   
+    }
+
+    // Check if data matrix (Eigen::MatrixXd) is empty
+    // throws an exception if data matrix is empty
+    void Model::__isDataEmpty(std::string fName, Eigen::MatrixXd data) const
+    {
+        if((0L) == data.size())
+        {
+            std::cout << fName << ": ";
+            throw std::runtime_error("Matrix is empty!");            
+        }
+    }
+
+    // Check if input data and expected data have the same amount of rows
+    // Check if there is a pair for each input data tensor in expected data and vice versa
+    void Model::__checkInExpectedRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const
+    {
+        if(inData.rows() != expData.rows())
+        {
+            std::cout << fName << ": ";
+            throw std::runtime_error("Input data and expected data don't have the same amount of rows!\
+                                        Cannot create pairs (xi, yi) for each data entry.");            
+        }
     }
 
     // Initialize all layers coefficients
