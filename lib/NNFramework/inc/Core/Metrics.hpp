@@ -13,7 +13,7 @@ namespace NNFramework
         struct MetricsFunctor
         {
             virtual std::string name() const = 0;
-            virtual double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const = 0;
+            virtual double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
         };
 
         struct ClassificationAccuracy : MetricsFunctor
@@ -23,7 +23,7 @@ namespace NNFramework
                 ClassificationAccuracy() = default;
                 ClassificationAccuracy(const double thr) : threshold(thr) {}
 
-                std::string name() const
+                std::string name() const override
                 {
                     return "ClassificationAccuracy";
                 }
@@ -31,7 +31,7 @@ namespace NNFramework
                 // param: x -> expected
                 // param: y -> predicted
                 // acc = correct / noofpred
-                double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+                double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
                 {
                     Eigen::VectorXd diffBool = x - y;
                     diffBool = diffBool.cwiseAbs();
@@ -45,14 +45,14 @@ namespace NNFramework
 
         struct MeanSquaredError : MetricsFunctor
         {
-            std::string name() const
+            std::string name() const override
             {
                 return "MeanSquaredError";
             }
 
             // param: x -> expected
             // param: y -> predicted
-            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd diffSquared = x - y;
                 diffSquared = diffSquared.cwiseProduct(diffSquared);
@@ -63,14 +63,14 @@ namespace NNFramework
 
         struct MeanAbsoluteError : MetricsFunctor
         {
-            std::string name() const
+            std::string name() const override
             {
                 return "MeanAbsoluteError";
             }
 
             // param: x -> expected
             // param: y -> predicted
-            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd diffAbs = x - y;
                 diffAbs = diffAbs.cwiseAbs();

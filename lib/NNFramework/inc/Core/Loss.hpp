@@ -16,19 +16,19 @@ namespace NNFramework
             
             // param: x -> expected
             // param: y -> predicted
-            virtual double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const = 0;
+            virtual double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
         };
 
         struct MeanSquaredError : LossFunctor
         {
-            std::string name() const
+            std::string name() const override
             {
                 return "MeanSquaredError";
             }
 
             // param: x -> expected
             // param: y -> predicted
-            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd diffSquared = x - y;
                 diffSquared = diffSquared.cwiseProduct(diffSquared);
@@ -39,14 +39,14 @@ namespace NNFramework
 
         struct MeanAbsoluteError : LossFunctor
         {
-            std::string name() const
+            std::string name() const override
             {
                 return "MeanAbsoluteError";
             }
 
             // param: x -> expected
             // param: y -> predicted
-            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd diffAbs = x - y;
                 diffAbs = diffAbs.cwiseAbs();
@@ -57,7 +57,7 @@ namespace NNFramework
 
         struct BinaryCrossEntropy : LossFunctor
         {
-            std::string name() const
+            std::string name() const override
             {
                 return "BinaryCrossEntropy";
             }
@@ -65,7 +65,7 @@ namespace NNFramework
             // param: x -> expected
             // param: y -> predicted
             // BCELoss = (1/n) * Sum_of( −(x * log(y) + (1−x) * log(1−y) ) )
-            double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
+            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd predLogFirst = y.array().log10().matrix();
                 Eigen::VectorXd predLogSecond = ((Eigen::VectorXd::Ones(y.size()) - y).array().log10()).matrix();

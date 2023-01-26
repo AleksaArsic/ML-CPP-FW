@@ -61,6 +61,8 @@ namespace NNFramework
         // check if input data and expected data have same number of rows
         __checkInExpRowDim(__FUNCTION__, inputData, expectedData);
 
+        // Split data to training data - validation data
+
         // For number of provided epochs train the model
         for (uint32_t i = 0; i < epochs; i++)
         {
@@ -77,9 +79,8 @@ namespace NNFramework
                 // calculate losses
                 __calculateLoss(expectedData, rowIdx);
 
+                // calculate metrics
             }
-
-            // calculate metrics
 
             // if the result of current epoch is better than overall best training result
             // save relevant model coefficients
