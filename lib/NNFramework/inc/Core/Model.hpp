@@ -11,9 +11,13 @@
 
 namespace NNFramework
 {
-    class Model
+    class Model final
     {
         public:
+            
+            // Loss function unique_ptr
+            std::unique_ptr<Loss::LossFunctor> mLossPtr;
+
             Model() : mLearnableCoeffs(0), mLayersNo(0), mIsCompiled(false) { }
 
             ~Model() = default;
@@ -29,7 +33,7 @@ namespace NNFramework
                 mLossPtr = std::make_unique<T>();
 
                 // initialize all layers coefficients
-                this->_initializeLayers();
+                this->__initializeLayers();
 
                 // set model compiled 
                 this->mIsCompiled = true;
@@ -44,17 +48,34 @@ namespace NNFramework
             bool loadModel();
             
             // Train desired model
-            // Expected input:
+            // Expected inputData format:
             // Eigen::MatrixXd
             // Data:
             // 1)   [x11, x12, ..., x1m]
             // 2)   [x21, x22, ..., x2m]
             // ...
             // n)   [xn1, xn2, ..., xnm]
-            void modelFit(const Eigen::MatrixXd inputData, Eigen::MatrixXd expectedData, const uint32_t epochs);
+            // 
+            // Expected expectedData format:
+            // Eigen::MatrixXd
+            // Data:
+            // 1)   [y11, y12, ..., y1m]
+            // 2)   [y21, y22, ..., y2m]
+            // ...
+            // n)   [yn1, yn2, ..., ynm]
+            //         
+            void modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs);
 
             // Trained model predict on provided input data
-            void modelPredict() const;
+            // Expected output:
+            // Eigen::MatrixXd
+            // Data:
+            // 1)   [y11, y12, ..., y1m]
+            // 2)   [y21, y22, ..., y2m]
+            // ...
+            // n)   [yn1, yn2, ..., ynm]
+            //
+            Eigen::MatrixXd modelPredict(Eigen::MatrixXd& inputData);
 
             // Show model summary by printing it on std::cout
             void modelSummary() const;
@@ -63,20 +84,28 @@ namespace NNFramework
             uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
             uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
 
-            // Loss function unique_ptr
-            std::unique_ptr<Loss::LossFunctor> mLossPtr;
-
         private:
+            // saves model training history
+            // Loss, Validation Loss, Accuracy and Validation Accuracy
+            struct ModelHistory
+            {
+                std::vector<double> hLoss;
+                std::vector<double> hValLoss;
+                std::vector<double> hAccuracy;
+                std::vector<double> hValAccuracy;
+            };
+
+            ModelHistory mHistory;
             std::vector<std::unique_ptr<Layers::Layer>> mLayers; // Number of Layers is not known in advance thus, std::vector is more suitable for storing Layers
             uint32_t mLearnableCoeffs;
             uint8_t mLayersNo;
             bool mIsCompiled;
 
             // Initialize all layers coefficients
-            void _initializeLayers();
+            void __initializeLayers();
 
             // Forward pass
-            void _forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId);
+            void __forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId);
     };
 }
 

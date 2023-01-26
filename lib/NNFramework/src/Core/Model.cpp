@@ -26,7 +26,7 @@ namespace NNFramework
     }
 
     // Initialize all layers coefficients
-    void Model::_initializeLayers()
+    void Model::__initializeLayers()
     {
         // iterate trough layers
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
@@ -88,7 +88,7 @@ namespace NNFramework
     }
 
     // Forward pass
-    void Model::_forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId)
+    void Model::__forwardPass(const Eigen::MatrixXd inputData, const uint32_t rowId)
     {
         // set input layer data
         std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[0]->get_mLayerZ();
@@ -119,8 +119,16 @@ namespace NNFramework
 
 
     // Train compiled model
-    void Model::modelFit(const Eigen::MatrixXd inputData, Eigen::MatrixXd expectedData, const uint32_t epochs)
+    void Model::modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs)
     {
+        // check if model is compiled
+        if(mIsCompiled == false)
+        {
+            std::cout << "Model.modelFit(): Model is not compiled!" << std::endl;
+            return;
+        }
+
+        // check if input data and expected data are empty
         // check if input data and expected data have same number of rows
 
         // For number of provided epochs train the model
@@ -130,7 +138,7 @@ namespace NNFramework
             for (uint32_t rowIdx = 0; rowIdx < 1/*inputData.rows()*/; rowIdx++)
             {
                 // forward pass trough NNetwork
-                _forwardPass(inputData, rowIdx);
+                __forwardPass(inputData, rowIdx);
                 
                 // backpropagation trough NNetwork
 
@@ -159,9 +167,35 @@ namespace NNFramework
     }
 
     // Trained model predict on provided input data
-    void Model::modelPredict() const
+    Eigen::MatrixXd Model::modelPredict(Eigen::MatrixXd& inputData)
     {
+        // check if model is compiled
+        if(mIsCompiled == false)
+        {
+            std::cout << "Model.modelPredict(): Model is not compiled!" << std::endl;
+            return Eigen::MatrixXd();
+        }      
 
+        // check if input data is empty
+
+        // start predicting
+        uint32_t outputLayerRows = mLayers[mLayersNo - 1]->get_mLayerZ()->rows();
+        Eigen::MatrixXd predictedData(inputData.rows(), outputLayerRows);
+        
+        // for each data row in inputData
+        for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
+        {
+            // forward pass trough NNetwork
+            __forwardPass(inputData, rowIdx);
+
+            // save outputs
+            std::shared_ptr<Eigen::MatrixXd> outputLayerZ = mLayers[mLayersNo - 1]->get_mLayerZ();
+            Eigen::VectorXd predictions = (*outputLayerZ);
+            predictedData.row(rowIdx) = predictions;
+        }
+
+        // return output of the Neural Network
+        return predictedData;
     }
 
     // Show model summary by printing it on std::cout
@@ -190,7 +224,7 @@ namespace NNFramework
         }
         else
         {
-            std::cout << "Model is not compiled!" << std::endl;
+            std::cout << "Model.modelSummary(): Model is not compiled!" << std::endl;
         }
     }
 }

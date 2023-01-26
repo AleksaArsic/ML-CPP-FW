@@ -22,12 +22,17 @@ int main()
     Eigen::MatrixXd inData = std::get<0>(loadedData);
     Eigen::MatrixXd labelsData = std::get<1>(loadedData);
 
-    Eigen::MatrixXd dummyInData(1, 3);
+    Eigen::MatrixXd dummyInData(6, 3);
     Eigen::MatrixXd dummyOutData(1, 3);
-    dummyInData << 1, 2, 3;
+    dummyInData << 1, 2, 3, 
+                   4, 5, 6,
+                   7, 8, 9,
+                   10, 11, 12,
+                   13, 14, 15,
+                   16, 17, 18;
     dummyOutData << 2, 4, 6;
-    model.modelFit(dummyInData, dummyOutData, 1);
-
+    //model.modelFit(dummyInData, dummyOutData, 1);
+    std::cout << model.modelPredict(dummyInData) << std::endl;
     // sort data based on xi values for the purposes of graph plotting 
     //std::tuple sortedData = sortData(inData, labelsData);
 

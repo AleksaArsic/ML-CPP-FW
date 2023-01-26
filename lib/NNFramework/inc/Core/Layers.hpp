@@ -20,6 +20,9 @@ namespace NNFramework
         class Layer
         {
             public:
+                // Activation function unique_ptr
+                std::unique_ptr<Activations::ActivationFunctor> mActivationPtr;
+
                 Layer() = delete;
                 Layer(Layer& l) = delete;
 
@@ -27,6 +30,9 @@ namespace NNFramework
 
                 // Delete copy assignment operator
                 Layer& operator=(const Layer& l) = delete;
+
+                // Delete move assignment operator
+                Layer& operator=(const Layer&& l) = delete;
 
                 // Getters
                 uint8_t get_mPerceptronNo() const noexcept { return this->mPerceptronNo; }
@@ -41,12 +47,7 @@ namespace NNFramework
                 void set_mLayerId(uint8_t id) { this->mLayerId = id; }
                 void set_mLearnableCoeffs(uint32_t coeffsNo) { this->mLearnableCoeffs = coeffsNo; }
 
-                // Activation function unique_ptr
-                std::unique_ptr<Activations::ActivationFunctor> mActivationPtr;
-
             protected:
-                Layer(const uint8_t perceptronNo); // Hide constructor from outside world, only classes inheriting Layer can construct Layers::Layer
-
                 std::shared_ptr<Eigen::MatrixXd> mLayerWeights;
                 std::shared_ptr<Eigen::MatrixXd> mLayerZ;
                 std::shared_ptr<Eigen::MatrixXd> mLayerBias;
@@ -54,6 +55,8 @@ namespace NNFramework
                 uint8_t mLayerId;
                 uint8_t mPerceptronNo;
                 uint32_t mLearnableCoeffs; 
+
+                Layer(const uint8_t perceptronNo); // Hide constructor from outside world, only classes inheriting Layer can construct Layers::Layer
         };
 
         // Demonstration of how greater modularity could be achieved
@@ -67,18 +70,19 @@ namespace NNFramework
 
                 Dense(const uint8_t perceptronNo);
 
-                // Delete copy assignment operator
-                Dense& operator=(const Dense& d) = delete;
-
                 template<class T>
                 Dense(const uint8_t perceptronNo, Activations::ActivationType<T>) : Dense(perceptronNo)
                 {
                     mActivationPtr = std::make_unique<T>();
                 }
 
-                // don't allow copy
-                // Dense(Dense& l) { /* Nothing to do, just call parent copy constructor */ };
                 Dense(Dense&& l) : Layer(std::move(l)) { /* Nothing to do, just call parent move constructor */ };
+
+                // Delete copy assignment operator
+                Dense& operator=(const Dense& d) = delete;
+
+                // Delete move assignment operator
+                Dense& operator=(const Dense&& d) = delete;
 
             private:
                 inline static uint8_t mInstances = 0;
