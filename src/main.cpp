@@ -37,7 +37,16 @@ int main()
                     20, 22, 24,
                     26, 28, 30,
                     32, 34, 36;
-    model.modelFit(dummyInData, dummyOutData, 5);
+    model.modelFit(dummyInData, dummyOutData, 1);
+
+    Eigen::VectorXd v1(3);
+    Eigen::VectorXd v2(3);
+
+    v1 << 1, 2, 3;
+    v2 << 1, 2.3, 2.7;
+
+    std::cout << Metrics::ClassificationAccuracy()(v1, v2) << std::endl;
+
     //std::cout << model.modelPredict(dummyInData) << std::endl;
     // sort data based on xi values for the purposes of graph plotting 
     //std::tuple sortedData = sortData(inData, labelsData);

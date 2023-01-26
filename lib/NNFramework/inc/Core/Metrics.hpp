@@ -18,7 +18,12 @@ namespace NNFramework
 
         struct ClassificationAccuracy : MetricsFunctor
         {
-                std::string name()
+                double threshold = 0.1;
+
+                ClassificationAccuracy() = default;
+                ClassificationAccuracy(const double thr) : threshold(thr) {}
+
+                std::string name() const
                 {
                     return "ClassificationAccuracy";
                 }
@@ -28,10 +33,13 @@ namespace NNFramework
                 // acc = correct / noofpred
                 double operator()(const Eigen::VectorXd x, const Eigen::VectorXd y) const
                 {
-                    
-                    
+                    Eigen::VectorXd diffBool = x - y;
+                    diffBool = diffBool.cwiseAbs();
+                    diffBool = diffBool.unaryExpr([this](double x){ return (x <= threshold) ? 1.0 : 0.0; });
 
-                    return 0.0;
+                    double correct = diffBool.sum();
+
+                    return correct / diffBool.size();
                 }
         };
 

@@ -12,7 +12,7 @@ namespace NNFramework
         {
             layer.set_mLayerId(mLayersNo++);
 
-            this->mLayers.push_back(std::move(std::make_unique<Layers::Layer>(std::move(layer))));
+            mLayers.push_back(std::move(std::make_unique<Layers::Layer>(std::move(layer))));
 
             return true;
         }
@@ -21,8 +21,7 @@ namespace NNFramework
             std::cerr << __FUNCTION__ << ": ";
             std::cerr << e.what() << std::endl;
             return false;
-        }
-        
+        }   
     }
 
     // Save model weights to desired location
@@ -60,7 +59,7 @@ namespace NNFramework
         __isDataEmpty(__FUNCTION__, expectedData);
 
         // check if input data and expected data have same number of rows
-        __checkInExpectedRowDim(__FUNCTION__, inputData, expectedData);
+        __checkInExpRowDim(__FUNCTION__, inputData, expectedData);
 
         // For number of provided epochs train the model
         for (uint32_t i = 0; i < epochs; i++)
@@ -98,7 +97,7 @@ namespace NNFramework
         __isDataEmpty(__FUNCTION__, inputData);
 
         // start predicting
-        uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_ID(mLayersNo)]->get_mLayerZ()->rows();
+        uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ()->rows();
         Eigen::MatrixXd predictedData(inputData.rows(), outputLayerRows);
          
         // for each data row in inputData
@@ -108,7 +107,7 @@ namespace NNFramework
             __forwardPass(inputData, rowIdx);
 
             // save outputs
-            std::shared_ptr<Eigen::MatrixXd> outputLayerZ = mLayers[OUTPUT_LAYER_ID(mLayersNo)]->get_mLayerZ();
+            std::shared_ptr<Eigen::MatrixXd> outputLayerZ = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ();
             Eigen::VectorXd predictions = (*outputLayerZ);
             predictedData.row(rowIdx) = predictions;
         }
@@ -131,7 +130,7 @@ namespace NNFramework
                 std::cout << "Layer: " << static_cast<uint32_t>((*it)->get_mLayerId()) << std::endl;
                 std::cout << "\t Perceptrons = " << static_cast<uint32_t>((*it)->get_mPerceptronNo()) << std::endl;
                 std::cout << "\t Coeffs = " << (*it)->get_mLearnableCoeffs() << std::endl;
-                if(INPUT_LAYER_ID != (*it)->get_mLayerId())
+                if(INPUT_LAYER_IDX != (*it)->get_mLayerId())
                 {
                     std::cout << "\t Activation = " << (*it)->mActivationPtr->name() << std::endl;
                 }
@@ -161,7 +160,7 @@ namespace NNFramework
     // throws an exception if data matrix is empty
     void Model::__isDataEmpty(std::string fName, Eigen::MatrixXd data) const
     {
-        if((0L) == data.size())
+        if(NNFRAMEWORK_ZERO == data.size())
         {
             std::cout << fName << ": ";
             throw std::runtime_error("Matrix is empty!");            
@@ -170,7 +169,7 @@ namespace NNFramework
 
     // Check if input data and expected data have the same amount of rows
     // Check if there is a pair for each input data tensor in expected data and vice versa
-    void Model::__checkInExpectedRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const
+    void Model::__checkInExpRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const
     {
         if(inData.rows() != expData.rows())
         {
@@ -188,27 +187,27 @@ namespace NNFramework
         {
             uint8_t layerId = (*it)->get_mLayerId();
             uint8_t perceptronNo = (*it)->get_mPerceptronNo();
-            uint8_t prevPercNo = (INPUT_LAYER_ID == layerId ? perceptronNo : mLayers[layerId - 1]->get_mPerceptronNo());
+            uint8_t prevPercNo = (INPUT_LAYER_IDX == layerId ? perceptronNo : mLayers[PREVIOUS_LAYER_IDX(layerId)]->get_mPerceptronNo());
     
             // initialize layer coefficients
             std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
             std::shared_ptr<Eigen::MatrixXd> layerZ = (*it)->get_mLayerZ();
             std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
 
-            *layerZ = Eigen::MatrixXd::Zero(perceptronNo, 1);
+            *layerZ = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
 
-            if(INPUT_LAYER_ID == layerId)
+            if(INPUT_LAYER_IDX == layerId)
             {
                 // Input layer does not contain Weights, Biases nor Activation
                 *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
-                *layerBias = Eigen::MatrixXd::Zero(perceptronNo, 1);
+                *layerBias = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
 
-                (*it)->set_mLearnableCoeffs(0);
+                (*it)->set_mLearnableCoeffs(NNFRAMEWORK_ZERO);
             }
             else
             {
                 *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
-                *layerBias = Eigen::MatrixXd::Ones(perceptronNo, 1);
+                *layerBias = Eigen::MatrixXd::Ones(perceptronNo, MATRIX_COL_INIT_VAL);
 
                 // calculate learnable coefficients
                 // learnableCoeffs = noOfPerceptrons * (noOfWeights + noOfInputs) + 1 (bias)
@@ -224,7 +223,7 @@ namespace NNFramework
     void Model::__forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx)
     {
         // set input layer data
-        std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[0]->get_mLayerZ();
+        std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[INPUT_LAYER_IDX]->get_mLayerZ();
 
         *inputLayerZ = inputData.row(rowIdx);
         (*inputLayerZ).transposeInPlace();
@@ -234,7 +233,7 @@ namespace NNFramework
         for (uint32_t i = 1; i < mLayersNo; ++i)
         {
             // get previous layer data
-            std::shared_ptr<Eigen::MatrixXd> prevLayerZ = mLayers[i - 1]->get_mLayerZ();
+            std::shared_ptr<Eigen::MatrixXd> prevLayerZ = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZ();
 
             // get current layer data
             std::shared_ptr<Eigen::MatrixXd> layerWeights = mLayers[i]->get_mLayerWeights();
@@ -252,7 +251,7 @@ namespace NNFramework
 
     void Model::__calculateLoss(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
     {
-        Eigen::MatrixXd outputLayerZ = *(mLayers[OUTPUT_LAYER_ID(mLayersNo)]->get_mLayerZ());
+        Eigen::MatrixXd outputLayerZ = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ());
         Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZ.data(), outputLayerZ.cols() * outputLayerZ.rows()));
         
         Eigen::VectorXd expectedOutput = expectedData.row(rowIdx);

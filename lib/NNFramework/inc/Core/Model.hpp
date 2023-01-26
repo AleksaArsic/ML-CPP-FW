@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <vector>
-#include <iostream>
 #include "../Eigen/Dense"
 #include "Layers.hpp"
 #include "Activations.hpp"
@@ -99,10 +98,10 @@ namespace NNFramework
             // Loss, Validation Loss, Accuracy and Validation Accuracy
             struct ModelHistory
             {
-                Eigen::MatrixXd hLoss;
-                Eigen::MatrixXd hValLoss;
-                Eigen::MatrixXd hAccuracy;
-                Eigen::MatrixXd hValAccuracy;
+                Eigen::VectorXd hLoss;
+                Eigen::VectorXd hValLoss;
+                Eigen::VectorXd hAccuracy;
+                Eigen::VectorXd hValAccuracy;
             };
 
             ModelHistory mHistory;
@@ -120,7 +119,7 @@ namespace NNFramework
 
             // Check if input data and expected data have the same amount of rows
             // Check if there is a pair for each input data tensor in expected data and vice versa
-            void __checkInExpectedRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const;
+            void __checkInExpRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const;
 
             // Initialize all layers coefficients
             void __initializeLayers();

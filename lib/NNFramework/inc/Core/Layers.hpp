@@ -5,8 +5,6 @@
 #include "../Eigen/Dense"
 #include "Activations.hpp"
 
-#include <iostream>
-
 namespace NNFramework
 {
     namespace Layers
