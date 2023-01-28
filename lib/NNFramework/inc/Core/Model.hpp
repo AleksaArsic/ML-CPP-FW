@@ -3,10 +3,12 @@
 
 #include <memory>
 #include <vector>
+#include <tuple>
 #include "../Eigen/Dense"
 #include "Layers.hpp"
 #include "Activations.hpp"
 #include "Loss.hpp"
+#include "Metrics.hpp"
 #include "../Common/Common.hpp"
 
 namespace NNFramework
@@ -15,8 +17,11 @@ namespace NNFramework
     {
         public:
             
-            // Loss function unique_ptr
+            // Loss functor unique_ptr
             std::unique_ptr<Loss::LossFunctor> mLossPtr;
+
+            // Metrics functor unique_ptr
+            std::unique_ptr<Metrics::MetricsFunctor> mMetricsPtr;
 
             Model() : mLearnableCoeffs(0), mLayersNo(0), mIsCompiled(false) { }
 
@@ -26,11 +31,14 @@ namespace NNFramework
             bool addLayer(Layers::Layer layer);
 
             // Compile model with added layers, optimizer, loss function and metrics 
-            template<class T>
-            bool compileModel(Loss::LossType<T>)
+            template<class X, class Y>
+            bool compileModel(Loss::LossType<X>, Metrics::MetricsType<Y>)
             {
                 // bind loss functor to the neural network model
-                mLossPtr = std::make_unique<T>();
+                mLossPtr = std::make_unique<X>();
+
+                // bind metrics functor  to the neural network model
+                mMetricsPtr = std::make_unique<Y>();
 
                 // initialize all layers coefficients
                 this->__initializeLayers();
@@ -96,7 +104,7 @@ namespace NNFramework
         private:
             // saves model training history
             // Loss, Validation Loss, Accuracy and Validation Accuracy
-            struct ModelHistory
+            struct ModelHistory final
             {
                 Eigen::VectorXd hLoss;
                 Eigen::VectorXd hValLoss;
@@ -127,8 +135,12 @@ namespace NNFramework
             // Forward pass
             void __forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx);
 
+            // Back propagation
+            void __backPropagation(const uint32_t rowIdx);
+
             // Calculate loss
-            void __calculateLoss(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
+            // Return values: tuple[0] = loss, tuple[1] = metrics
+            std::tuple<Eigen::VectorXd, double> __calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
 
     };
 }

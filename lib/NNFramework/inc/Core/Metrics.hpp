@@ -16,7 +16,7 @@ namespace NNFramework
             virtual double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
         };
 
-        struct ClassificationAccuracy : MetricsFunctor
+        struct ClassificationAccuracy final : MetricsFunctor
         {
                 double threshold = 0.1;
 
@@ -43,7 +43,7 @@ namespace NNFramework
                 }
         };
 
-        struct MeanSquaredError : MetricsFunctor
+        struct MeanSquaredError final : MetricsFunctor
         {
             std::string name() const override
             {
@@ -61,7 +61,7 @@ namespace NNFramework
             }      
         };
 
-        struct MeanAbsoluteError : MetricsFunctor
+        struct MeanAbsoluteError final : MetricsFunctor
         {
             std::string name() const override
             {

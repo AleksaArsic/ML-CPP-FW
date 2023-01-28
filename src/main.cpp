@@ -12,9 +12,9 @@ int main()
 
     model.addLayer(Layers::Dense(3)); // or -> model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::InputActivation>()));
     model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Relu>()));
-    model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::LeakyRelu>()));
+    model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::Sigmoid>()));
 
-    model.compileModel(Loss::LossType<Loss::MeanSquaredError>());
+    model.compileModel(Loss::LossType<Loss::BinaryCrossEntropy>(), Metrics::MetricsType<Metrics::MeanSquaredError>());
     model.modelSummary();
 
     // read input data and labels from input file
@@ -25,27 +25,23 @@ int main()
     Eigen::MatrixXd dummyInData(6, 3);
     Eigen::MatrixXd dummyOutData(6, 3);
 
-    dummyInData << 1, 2, 3, 
-                   4, 5, 6,
-                   7, 8, 9,
-                   10, 11, 12,
-                   13, 14, 15,
-                   16, 17, 18;
-    dummyOutData << 2, 4, 6,
-                    8, 10, 12,
-                    14, 16, 18,
-                    20, 22, 24,
-                    26, 28, 30,
-                    32, 34, 36;
+    dummyInData << 0.1, 0.2, 0.3, 
+                   0.4, 0.5, 0.6,
+                   0.7, 0.8, 0.9,
+                   0.10, 0.11, 0.12,
+                   0.13, 0.14, 0.15,
+                   0.16, 0.17, 0.18;
+    dummyOutData << 0.2, 0.4, 0.6,
+                    0.8, 0.10, 0.12,
+                    0.14, 0.16, 0.18,
+                    0.20, 0.22, 0.24,
+                    0.26, 0.28, 0.30,
+                    0.32, 0.34, 0.36;
     model.modelFit(dummyInData, dummyOutData, 1);
 
-    Eigen::VectorXd v1(3);
-    Eigen::VectorXd v2(3);
-
-    v1 << 1, 2, 3;
-    v2 << 1, 2.3, 2.7;
-
-    std::cout << Metrics::ClassificationAccuracy()(v1, v2) << std::endl;
+    Activations::Sigmoid sig;
+    std::cout << sig(1.0) << " " << sig(1.0, true) << std::endl;
+    std::cout << sig(-1.0) << " " << sig(-1.0, true) << std::endl;
 
     //std::cout << model.modelPredict(dummyInData) << std::endl;
     // sort data based on xi values for the purposes of graph plotting 

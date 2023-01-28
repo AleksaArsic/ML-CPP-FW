@@ -16,10 +16,10 @@ namespace NNFramework
             
             // param: x -> expected
             // param: y -> predicted
-            virtual double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
+            virtual Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
         };
 
-        struct MeanSquaredError : LossFunctor
+        struct MeanSquaredError final : LossFunctor
         {
             std::string name() const override
             {
@@ -28,16 +28,16 @@ namespace NNFramework
 
             // param: x -> expected
             // param: y -> predicted
-            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd diffSquared = x - y;
                 diffSquared = diffSquared.cwiseProduct(diffSquared);
-                
-                return (diffSquared.sum() / diffSquared.size());
+
+                return diffSquared;
             }      
         };
 
-        struct MeanAbsoluteError : LossFunctor
+        struct MeanAbsoluteError final : LossFunctor
         {
             std::string name() const override
             {
@@ -46,16 +46,16 @@ namespace NNFramework
 
             // param: x -> expected
             // param: y -> predicted
-            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd diffAbs = x - y;
                 diffAbs = diffAbs.cwiseAbs();
 
-                return (diffAbs.sum() / diffAbs.size());
+                return diffAbs;
             }      
         };
 
-        struct BinaryCrossEntropy : LossFunctor
+        struct BinaryCrossEntropy final : LossFunctor
         {
             std::string name() const override
             {
@@ -65,15 +65,15 @@ namespace NNFramework
             // param: x -> expected
             // param: y -> predicted
             // BCELoss = (1/n) * Sum_of( −(x * log(y) + (1−x) * log(1−y) ) )
-            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd predLogFirst = y.array().log10().matrix();
                 Eigen::VectorXd predLogSecond = ((Eigen::VectorXd::Ones(y.size()) - y).array().log10()).matrix();
                 Eigen::VectorXd expectedDiff = (Eigen::VectorXd::Ones(x.size()) - x);
 
-                double productSum = ((x.cwiseProduct(predLogFirst) + expectedDiff.cwiseProduct(predLogSecond))).sum();
+                Eigen::VectorXd loss = -1 * (x.cwiseProduct(predLogFirst) + expectedDiff.cwiseProduct(predLogSecond));
 
-                return ((-productSum) / x.size());
+                return loss;
             }      
         };
     }

@@ -30,7 +30,7 @@ namespace NNFramework
         try
         {
             /* Not supported in this version of NNFramework */
-            return true;
+            return false;
         }
         catch(const std::exception& e)
         {
@@ -61,26 +61,49 @@ namespace NNFramework
         // check if input data and expected data have same number of rows
         __checkInExpRowDim(__FUNCTION__, inputData, expectedData);
 
+        // check if expectedData has same number of columns as output layer of NN
+
         // Split data to training data - validation data
 
-        // For number of provided epochs train the model
-        for (uint32_t i = 0; i < epochs; i++)
+        // For provided number of epochs train the model
+        for (uint32_t ep = 0; ep < epochs; ++ep)
         {
+            // loss and metrics
+            Eigen::VectorXd loss(expectedData.cols());
+            double metrics;
+
             // for each data row in inputData
             for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
             {
                 // forward pass trough NNetwork
                 __forwardPass(inputData, rowIdx);
                 
-                // backpropagation trough NNetwork
+                // calculate losses and metrics
+                auto [l, m] = __calculateLossAndMetrics(expectedData, rowIdx);
+                loss += l;
+                metrics = m;
+                //std::cout << "Epoch: " << ep << " -> Loss: " << loss << " Accuracy: " << metrics << "\r";
+                //std::cout.flush();  
+
+
+                // backpropagation trough the NNetwork
 
                 // update layer coefficients
 
-                // calculate losses
-                __calculateLoss(expectedData, rowIdx);
-
-                // calculate metrics
+               
             }
+            std::cout << loss << std::endl << std::endl;
+            std::cout << "Loss: " << loss.sum() / inputData.rows() <<  std::endl;
+
+            // save loss and metrics of each epoh
+            //mHistory.hLoss.resize(ep + 1);
+            //mHistory.hLoss[ep] = loss;
+
+            mHistory.hAccuracy.resize(ep + 1);
+            mHistory.hAccuracy[ep] = metrics;
+
+            std::cout << mHistory.hLoss << std::endl;
+            std::cout << mHistory.hAccuracy << std::endl;
 
             // if the result of current epoch is better than overall best training result
             // save relevant model coefficients
@@ -96,6 +119,8 @@ namespace NNFramework
 
         // check if input data is empty
         __isDataEmpty(__FUNCTION__, inputData);
+
+        // check if expectedData has same number of columns as output layer of NN
 
         // start predicting
         uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ()->rows();
@@ -120,31 +145,28 @@ namespace NNFramework
     // Show model summary by printing it on std::cout
     void Model::modelSummary() const
     {
-        if(this->mIsCompiled)
-        {
-            std::cout << "**************************************" << std::endl;
-            std::cout << "Model summary: " << std::endl;
-            std::cout << "**************************************" << std::endl;
+        // check if model is compiled
+        __checkIsModelCompiled(__FUNCTION__);
 
-            for (auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        std::cout << "**************************************" << std::endl;
+        std::cout << "Model summary: " << std::endl;
+        std::cout << "**************************************" << std::endl;
+
+        for (auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            std::cout << "Layer: " << static_cast<uint32_t>((*it)->get_mLayerId()) << std::endl;
+            std::cout << "\t Perceptrons = " << static_cast<uint32_t>((*it)->get_mPerceptronNo()) << std::endl;
+            std::cout << "\t Coeffs = " << (*it)->get_mLearnableCoeffs() << std::endl;
+            if(INPUT_LAYER_IDX != (*it)->get_mLayerId())
             {
-                std::cout << "Layer: " << static_cast<uint32_t>((*it)->get_mLayerId()) << std::endl;
-                std::cout << "\t Perceptrons = " << static_cast<uint32_t>((*it)->get_mPerceptronNo()) << std::endl;
-                std::cout << "\t Coeffs = " << (*it)->get_mLearnableCoeffs() << std::endl;
-                if(INPUT_LAYER_IDX != (*it)->get_mLayerId())
-                {
-                    std::cout << "\t Activation = " << (*it)->mActivationPtr->name() << std::endl;
-                }
-                std::cout << "**************************************" << std::endl;
+                std::cout << "\t Activation = " << (*it)->mActivationPtr->name() << std::endl;
             }
-            std::cout << "Total learnable coefficients = " << this->mLearnableCoeffs << std::endl;
-            std::cout << "Loss function: " << this->mLossPtr->name() << std::endl;
             std::cout << "**************************************" << std::endl;
         }
-        else
-        {
-            std::cout << "Model.modelSummary(): Model is not compiled!" << std::endl;
-        }
+        std::cout << "Total learnable coefficients = " << mLearnableCoeffs << std::endl;
+        std::cout << "Loss function: " << mLossPtr->name() << std::endl;
+        std::cout << "**************************************" << std::endl;
+
     }
 
     // Check if model is compiled
@@ -250,15 +272,25 @@ namespace NNFramework
         }
     }
 
-    void Model::__calculateLoss(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
+    // Back propagation
+    void __backPropagation(const uint32_t rowIdx)
+    {
+        // calculate gradients of the output layer
+
+        // calculate gradients of the rest of the layers
+
+    }
+
+    // Return values: tuple[0] = loss, tuple[1] = metrics
+    std::tuple<Eigen::VectorXd, double> Model::__calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
     {
         Eigen::MatrixXd outputLayerZ = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ());
         Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZ.data(), outputLayerZ.cols() * outputLayerZ.rows()));
         
         Eigen::VectorXd expectedOutput = expectedData.row(rowIdx);
-    
-        double loss = (*mLossPtr)(modelOutput, expectedOutput);
-        
-        std::cout << "Loss: " << loss << std::endl;        
+        Eigen::VectorXd loss = (*mLossPtr)(expectedOutput, modelOutput);
+        double metrics = (*mMetricsPtr)(modelOutput, expectedOutput);       
+
+        return std::make_tuple(loss, metrics);    
     }
 }
