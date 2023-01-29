@@ -73,7 +73,7 @@ namespace NNFramework
             double metrics;
 
             // for each data row in inputData
-            for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
+            for (uint32_t rowIdx = 0; rowIdx < 1 /*inputData.rows()*/; rowIdx++)
             {
                 // forward pass trough NNetwork
                 __forwardPass(inputData, rowIdx);
@@ -123,7 +123,7 @@ namespace NNFramework
         // check if expectedData has same number of columns as output layer of NN
 
         // start predicting
-        uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ()->rows();
+        uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()->rows();
         Eigen::MatrixXd predictedData(inputData.rows(), outputLayerRows);
          
         // for each data row in inputData
@@ -133,8 +133,8 @@ namespace NNFramework
             __forwardPass(inputData, rowIdx);
 
             // save outputs
-            std::shared_ptr<Eigen::MatrixXd> outputLayerZ = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ();
-            Eigen::VectorXd predictions = (*outputLayerZ);
+            std::shared_ptr<Eigen::MatrixXd> outputLayerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
+            Eigen::VectorXd predictions = (*outputLayerZActivated);
             predictedData.row(rowIdx) = predictions;
         }
 
@@ -208,6 +208,7 @@ namespace NNFramework
         // iterate trough layers
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
+            std::cout << "init layers " << std::endl;
             uint8_t layerId = (*it)->get_mLayerId();
             uint8_t perceptronNo = (*it)->get_mPerceptronNo();
             uint8_t prevPercNo = (INPUT_LAYER_IDX == layerId ? perceptronNo : mLayers[PREVIOUS_LAYER_IDX(layerId)]->get_mPerceptronNo());
@@ -216,8 +217,10 @@ namespace NNFramework
             std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
             std::shared_ptr<Eigen::MatrixXd> layerZ = (*it)->get_mLayerZ();
             std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
+            std::shared_ptr<Eigen::MatrixXd> layerZActivated = (*it)->get_mLayerZActivated();
 
             *layerZ = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
+            *layerZActivated = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
 
             if(INPUT_LAYER_IDX == layerId)
             {
@@ -247,29 +250,35 @@ namespace NNFramework
     {
         // set input layer data
         std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[INPUT_LAYER_IDX]->get_mLayerZ();
+        std::shared_ptr<Eigen::MatrixXd> inputLayerZActivated = mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated();
 
         *inputLayerZ = inputData.row(rowIdx);
         (*inputLayerZ).transposeInPlace();
         
+        // passtrough input values as activated
+        // x = f(x)
+        (*inputLayerZActivated) = (*inputLayerZ);     
+
         // iterate trough layers 
         // skip first layer, as first (input) layer does not have weights nor activations
         for (uint32_t i = 1; i < mLayersNo; ++i)
         {
             // get previous layer data
-            std::shared_ptr<Eigen::MatrixXd> prevLayerZ = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZ();
+            std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
 
             // get current layer data
             std::shared_ptr<Eigen::MatrixXd> layerWeights = mLayers[i]->get_mLayerWeights();
             std::shared_ptr<Eigen::MatrixXd> layerZ = mLayers[i]->get_mLayerZ();
             std::shared_ptr<Eigen::MatrixXd> layerBias = mLayers[i]->get_mLayerBias();
+            std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[i]->get_mLayerZActivated();
 
             // z = Wx + b
-            (*layerZ) = ((*layerWeights) * (*prevLayerZ)) + (*layerBias);
+            (*layerZ) = ((*layerWeights) * (*prevLayerZActivated)) + (*layerBias);
 
-            // apply activation functor to the layer Z values
+            // apply activation functor to the layer Z activated values
             std::reference_wrapper activationFunRef = *(mLayers[i]->mActivationPtr);
-            (*layerZ) = (*layerZ).unaryExpr(activationFunRef);
-        }
+            (*layerZActivated) = (*layerZ).unaryExpr(activationFunRef);
+        } 
     }
 
     // Back propagation
@@ -284,8 +293,8 @@ namespace NNFramework
     // Return values: tuple[0] = loss, tuple[1] = metrics
     std::tuple<Eigen::VectorXd, double> Model::__calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
     {
-        Eigen::MatrixXd outputLayerZ = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZ());
-        Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZ.data(), outputLayerZ.cols() * outputLayerZ.rows()));
+        Eigen::MatrixXd outputLayerZActivated = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated());
+        Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZActivated.data(), outputLayerZActivated.cols() * outputLayerZActivated.rows()));
         
         Eigen::VectorXd expectedOutput = expectedData.row(rowIdx);
         Eigen::VectorXd loss = (*mLossPtr)(expectedOutput, modelOutput);

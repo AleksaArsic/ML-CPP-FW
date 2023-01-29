@@ -9,6 +9,7 @@ namespace NNFramework
             mLayerWeights = std::make_shared<Eigen::MatrixXd>();
             mLayerZ = std::make_shared<Eigen::MatrixXd>();
             mLayerBias = std::make_shared<Eigen::MatrixXd>();
+            mLayerZActivated = std::make_shared<Eigen::MatrixXd>();
             // This way we are sure we are having "Passtrough" activation for the input layer 
             // and as this constructor is protected only classes that are inheriting Layers::Layer
             // can construct base functionality of the Layer class
@@ -20,6 +21,7 @@ namespace NNFramework
             mLayerWeights = std::move(l.mLayerWeights);
             mLayerZ = std::move(l.mLayerZ);
             mLayerBias = std::move(l.mLayerBias);
+            mLayerZActivated = std::move(l.mLayerZActivated);
             mActivationPtr = std::move(l.mActivationPtr);
             
             l.mLayerId = 0;

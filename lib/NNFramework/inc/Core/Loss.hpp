@@ -64,7 +64,7 @@ namespace NNFramework
 
             // param: x -> expected
             // param: y -> predicted
-            // BCELoss = (1/n) * Sum_of( −(x * log(y) + (1−x) * log(1−y) ) )
+            // BCELoss =  −(x * log(y) + (1−x) * log(1−y))
             Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 Eigen::VectorXd predLogFirst = y.array().log10().matrix();
