@@ -123,11 +123,14 @@ namespace NNFramework
 
             // Check if data matrix (Eigen::MatrixXd) is empty
             // throws an exception if data matrix is empty
-            void __isDataEmpty(std::string fName, Eigen::MatrixXd data) const;
+            void __isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const;
 
             // Check if input data and expected data have the same amount of rows
             // Check if there is a pair for each input data tensor in expected data and vice versa
-            void __checkInExpRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const;
+            void __checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const;
+
+            // Check if the input Matrix has the same amount of columns as the number of rows in layer data
+            void __checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const;
 
             // Initialize all layers coefficients
             void __initializeLayers();
