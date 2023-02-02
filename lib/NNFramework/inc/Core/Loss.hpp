@@ -3,6 +3,7 @@
 
 #include <string>
 #include "../Eigen/Dense"
+#include <math.h>
 
 namespace NNFramework
 {
@@ -16,7 +17,20 @@ namespace NNFramework
             
             // param: x -> expected
             // param: y -> predicted
-            virtual Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
+            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y, const bool derive = false) const
+            {
+                if(derive)
+                {
+                    return derivative(x, y);
+                }
+                else
+                {
+                    return loss(x, y);
+                }
+            }
+            
+            virtual Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
+            virtual Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
         };
 
         struct MeanSquaredError final : LossFunctor
@@ -27,14 +41,21 @@ namespace NNFramework
             }
 
             // param: x -> expected
-            // param: y -> predicted
-            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            // param: y -> predicted  
+            Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
             {
                 Eigen::VectorXd diffSquared = x - y;
                 diffSquared = diffSquared.cwiseProduct(diffSquared);
 
-                return diffSquared;
-            }      
+                return 0.5 *  diffSquared;
+            }
+
+            Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            {
+                Eigen::VectorXd diff = y - x;
+
+                return diff;
+            }
         };
 
         struct MeanAbsoluteError final : LossFunctor
@@ -46,13 +67,26 @@ namespace NNFramework
 
             // param: x -> expected
             // param: y -> predicted
-            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
             {
                 Eigen::VectorXd diffAbs = x - y;
                 diffAbs = diffAbs.cwiseAbs();
 
                 return diffAbs;
-            }      
+            }
+
+            // derivative of MeanAbsoluteError is not defined in 0
+            Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            {
+                Eigen::VectorXd result(x.size());
+
+                for(uint32_t i = 0; i < result.size(); ++i)
+                {
+                    result[i] = (y[i] > x[i] ? 1.0 : (y[i] < x[i] ? -1.0 : NAN));
+                }
+
+                return result;
+            }     
         };
 
         struct BinaryCrossEntropy final : LossFunctor
@@ -65,16 +99,27 @@ namespace NNFramework
             // param: x -> expected
             // param: y -> predicted
             // BCELoss =  −(x * log(y) + (1−x) * log(1−y))
-            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
             {
                 Eigen::VectorXd predLogFirst = y.array().log10().matrix();
                 Eigen::VectorXd predLogSecond = ((Eigen::VectorXd::Ones(y.size()) - y).array().log10()).matrix();
                 Eigen::VectorXd expectedDiff = (Eigen::VectorXd::Ones(x.size()) - x);
 
-                Eigen::VectorXd loss = -1 * (x.cwiseProduct(predLogFirst) + expectedDiff.cwiseProduct(predLogSecond));
+                Eigen::VectorXd retLoss = -1 * (x.cwiseProduct(predLogFirst) + expectedDiff.cwiseProduct(predLogSecond));
 
-                return loss;
-            }      
+                return retLoss;
+            }
+            Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            {
+                Eigen::VectorXd result(x.size());
+                
+                for(uint32_t i = 0; i < result.size(); ++i)
+                {
+                    result[i] = (y[i] - x[i]) / (y[i] * (1 - y[i]));
+                }
+
+                return result;
+            }  
         };
     }
 }

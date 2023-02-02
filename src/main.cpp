@@ -39,10 +39,6 @@ int main()
                     0.32, 0.34, 0.36;
     model.modelFit(dummyInData, dummyOutData, 1);
 
-    Activations::Sigmoid sig;
-    std::cout << sig(1.0) << " " << sig(1.0, true) << std::endl;
-    std::cout << sig(-1.0) << " " << sig(-1.0, true) << std::endl;
-
     //std::cout << model.modelPredict(dummyInData) << std::endl;
     // sort data based on xi values for the purposes of graph plotting 
     //std::tuple sortedData = sortData(inData, labelsData);

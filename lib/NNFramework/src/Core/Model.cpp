@@ -285,6 +285,11 @@ namespace NNFramework
     void __backPropagation(const uint32_t rowIdx)
     {
         // calculate gradients of the output layer
+            // calculate gradient of loss in respect to output
+
+            // calculate derivative of the output activation
+
+            // calculate overall gradient of the output layer
 
         // calculate gradients of the rest of the layers
 
