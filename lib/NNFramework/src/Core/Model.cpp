@@ -61,7 +61,10 @@ namespace NNFramework
         // check if input data and expected data have same number of rows
         __checkInExpRowDim(__FUNCTION__, inputData, expectedData);
 
-        // check if expectedData has same number of columns as output layer of NN
+        // check if input data has the same number of columns as number of rows in input layer of NN
+        // check if expectedData has the same number of columns as number of rows in output layer of NN
+        __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
+        __checkRowColDim(__FUNCTION__, expectedData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
 
         // Split data to training data - validation data
 
@@ -120,7 +123,8 @@ namespace NNFramework
         // check if input data is empty
         __isDataEmpty(__FUNCTION__, inputData);
 
-        // check if expectedData has same number of columns as output layer of NN
+        // check if input data has the same number of columns as number of rows in input layer of NN
+        __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
 
         // start predicting
         uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()->rows();
@@ -181,7 +185,7 @@ namespace NNFramework
 
     // Check if data matrix (Eigen::MatrixXd) is empty
     // throws an exception if data matrix is empty
-    void Model::__isDataEmpty(std::string fName, Eigen::MatrixXd data) const
+    void Model::__isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const
     {
         if(NNFRAMEWORK_ZERO == data.size())
         {
@@ -192,7 +196,7 @@ namespace NNFramework
 
     // Check if input data and expected data have the same amount of rows
     // Check if there is a pair for each input data tensor in expected data and vice versa
-    void Model::__checkInExpRowDim(std::string fName, Eigen::MatrixXd inData, Eigen::MatrixXd expData) const
+    void Model::__checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const
     {
         if(inData.rows() != expData.rows())
         {
@@ -202,13 +206,22 @@ namespace NNFramework
         }
     }
 
+    // Check if the input Matrix has the same amount of columns as the number of rows in layer data
+    void Model::__checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const
+    {
+        if(inData.cols() != layerData.rows())
+        {
+            std::cout << fName << ": ";
+            throw std::runtime_error("Input data Matrix does not have the same amount of rows as the number of columns in layer data!");
+        }        
+    }
+
     // Initialize all layers coefficients
     void Model::__initializeLayers()
     {
         // iterate trough layers
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
-            std::cout << "init layers " << std::endl;
             uint8_t layerId = (*it)->get_mLayerId();
             uint8_t perceptronNo = (*it)->get_mPerceptronNo();
             uint8_t prevPercNo = (INPUT_LAYER_IDX == layerId ? perceptronNo : mLayers[PREVIOUS_LAYER_IDX(layerId)]->get_mPerceptronNo());
