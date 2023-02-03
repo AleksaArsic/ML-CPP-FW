@@ -16,7 +16,7 @@ namespace NNFramework
         {
             virtual std::string name() const = 0;
             
-            double operator()(const double x, const bool derive = false) const
+            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const bool derive = false) const
             {
                 if(derive)
                 {
@@ -28,8 +28,8 @@ namespace NNFramework
                 }
             }
             
-            virtual double activate(const double x) const = 0;
-            virtual double derivative(const double x) const = 0;
+            virtual Eigen::VectorXd activate(const Eigen::VectorXd& x) const = 0;
+            virtual Eigen::VectorXd derivative(const Eigen::VectorXd& x) const = 0;
         };
 
         struct InputActivation final : ActivationFunctor 
@@ -39,14 +39,15 @@ namespace NNFramework
                 return "InputActivation";
             }
 
-            double activate(const double x) const override 
+            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
             { 
                 return x;
             }
 
-            double derivative(const double x) const override 
+            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
             {
-                return 0.0;
+                Eigen::VectorXd retVec = Eigen::VectorXd::Zero(x.size());
+                return retVec;
             }
         };
 
@@ -57,14 +58,22 @@ namespace NNFramework
                 return "Sigmoid";
             }
 
-            double activate(const double x) const override 
+            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
             { 
-                return (1.0 / (1.0 + std::exp(-x)));
+                Eigen::VectorXd retVec = x;
+                
+                retVec *= -1.0;
+                retVec = retVec.unaryExpr([](const double& el) { return std::exp(el); });
+
+                retVec = retVec + Eigen::VectorXd::Ones(retVec.size());
+
+                return retVec.unaryExpr([](const double& el){ return 1.0 / el; });
             }
 
-            double derivative(const double x) const override 
+            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
             {
-                return activate(x) * (1 - activate(x));
+                Eigen::VectorXd activated = activate(x);
+                return activated.cwiseProduct(Eigen::VectorXd::Ones(activated.size()) - activated);
             }
         };
 
@@ -75,26 +84,37 @@ namespace NNFramework
                 return "Relu";
             }
 
-            double activate(const double x) const override 
+            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
             { 
-                return std::max(0.0, x);
+                Eigen::VectorXd retVec = x.unaryExpr([](const double& el){ return std::max(0.0, el); });
+
+                return retVec;
             }
 
-            double derivative(const double x) const override 
+            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
             {
-                if(0.0 > x)
-                {
-                    return 0.0;
-                }
-                else if (0.0 < x)
-                {
-                    return 1.0;
-                }
-                else
-                {
-                    std::cout << __FUNCTION__ << ": ";
-                    throw std::runtime_error("Activation derivative undefined in zero!");    
-                }
+                std::string fname = __FUNCTION__;
+
+                Eigen::VectorXd retVec = x.unaryExpr(
+                    [fname](const double& el)
+                    {
+                        if(0.0 > el)
+                        {
+                            return 0.0;
+                        }
+                        else if (0.0 < el)
+                        {
+                            return 1.0;
+                        }
+                        else
+                        {
+                            std::cout << fname << ": ";
+                            throw std::runtime_error("Activation derivative undefined in zero!");    
+                        }
+                    }
+                );
+
+                return retVec;
             }
         };
 
@@ -107,33 +127,37 @@ namespace NNFramework
                 return "LeakyRelu";
             }
 
-            double activate(const double x) const override 
+            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
             { 
-                if(x >= 0)
-                {
-                    return x;
-                }
-                else
-                {
-                    return factor * x; 
-                }
+                Eigen::VectorXd retVec = x.unaryExpr([this](const double& el) { return (el >= 0) ? el : factor * el; } );
+
+                return retVec;
             }
 
-            double derivative(const double x) const override 
+            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
             {
-                if(0.0 < x)
-                {
-                    return 1.0;
-                }
-                else if (0.0 > x)
-                {
-                    return factor;
-                }
-                else
-                {
-                    std::cout << __FUNCTION__ << ": ";
-                    throw std::runtime_error("Activation derivative undefined in zero!");    
-                }
+                std::string fname = __FUNCTION__;
+
+                Eigen::VectorXd retVec = x.unaryExpr(
+                    [this, fname](const double& el)
+                    {
+                        if(0.0 < el)
+                        {
+                            return 1.0;
+                        }
+                        else if (0.0 > el)
+                        {
+                            return factor;
+                        }
+                        else
+                        {
+                            std::cout << fname << ": ";
+                            throw std::runtime_error("Activation derivative undefined in zero!");    
+                        }
+                    }
+                );
+
+                return retVec;
             }
         };
     }

@@ -90,7 +90,7 @@ namespace NNFramework
 
 
                 // backpropagation trough the NNetwork
-
+                __backPropagation(rowIdx);
                 // update layer coefficients
 
                
@@ -105,8 +105,8 @@ namespace NNFramework
             mHistory.hAccuracy.resize(ep + 1);
             mHistory.hAccuracy[ep] = metrics;
 
-            std::cout << mHistory.hLoss << std::endl;
-            std::cout << mHistory.hAccuracy << std::endl;
+            //std::cout << mHistory.hLoss << std::endl;
+            //std::cout << mHistory.hAccuracy << std::endl;
 
             // if the result of current epoch is better than overall best training result
             // save relevant model coefficients
@@ -289,17 +289,17 @@ namespace NNFramework
             (*layerZ) = ((*layerWeights) * (*prevLayerZActivated)) + (*layerBias);
 
             // apply activation functor to the layer Z activated values
-            std::reference_wrapper activationFunRef = *(mLayers[i]->mActivationPtr);
-            (*layerZActivated) = (*layerZ).unaryExpr(activationFunRef);
+            (*layerZActivated) = (*(mLayers[i]->mActivationPtr))(*layerZ);
+            std::cout << "layerZActivated: " << *(layerZActivated) << std::endl; 
         } 
     }
 
     // Back propagation
-    void __backPropagation(const uint32_t rowIdx)
+    void Model::__backPropagation(const uint32_t rowIdx)
     {
         // calculate gradients of the output layer
             // calculate gradient of loss in respect to output
-
+            std::cout << *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerWeights()) << std::endl << std::endl;
             // calculate derivative of the output activation
 
             // calculate overall gradient of the output layer

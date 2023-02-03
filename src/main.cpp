@@ -11,7 +11,7 @@ int main()
     Model model;
 
     model.addLayer(Layers::Dense(3)); // or -> model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::InputActivation>()));
-    model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Relu>()));
+    model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Sigmoid>()));
     model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::Sigmoid>()));
 
     model.compileModel(Loss::LossType<Loss::BinaryCrossEntropy>(), Metrics::MetricsType<Metrics::MeanSquaredError>());
@@ -38,6 +38,14 @@ int main()
                     0.26, 0.28, 0.30,
                     0.32, 0.34, 0.36;
     model.modelFit(dummyInData, dummyOutData, 1);
+
+    Activations::LeakyRelu sig;
+    Eigen::VectorXd vec(3);
+
+    vec << 1, -2, 3;
+
+    //std::cout << "Activations:" << std::endl;
+    //std::cout << sig(vec) << std::endl << std::endl << sig(vec, true) << std::endl;
 
     //std::cout << model.modelPredict(dummyInData) << std::endl;
     // sort data based on xi values for the purposes of graph plotting 
