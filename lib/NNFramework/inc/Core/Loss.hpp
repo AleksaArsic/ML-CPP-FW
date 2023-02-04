@@ -112,7 +112,7 @@ namespace NNFramework
             Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
             {
                 Eigen::VectorXd result(x.size());
-                
+
                 for(uint32_t i = 0; i < result.size(); ++i)
                 {
                     result[i] = (y[i] - x[i]) / (y[i] * (1 - y[i]));

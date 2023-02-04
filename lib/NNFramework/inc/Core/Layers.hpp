@@ -41,6 +41,7 @@ namespace NNFramework
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerZ() const noexcept { return this->mLayerZ; }
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerZActivated() const noexcept { return this->mLayerZActivated; }
+                std::shared_ptr<Eigen::MatrixXd> get_mLayerWGradients() const noexcept { return this->mLayerWGradients; }
 
                 // Setters
                 void set_mLayerId(uint8_t id) { this->mLayerId = id; }
@@ -52,6 +53,7 @@ namespace NNFramework
                 std::shared_ptr<Eigen::MatrixXd> mLayerBias;
                 
                 std::shared_ptr<Eigen::MatrixXd> mLayerZActivated;
+                std::shared_ptr<Eigen::MatrixXd> mLayerWGradients;
 
                 uint8_t mLayerId;
                 uint8_t mPerceptronNo;

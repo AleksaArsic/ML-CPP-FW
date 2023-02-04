@@ -41,8 +41,19 @@ int main()
 
     Activations::LeakyRelu sig;
     Eigen::VectorXd vec(3);
+    Eigen::VectorXd vec2(4);
+    Eigen::MatrixXd mat = Eigen::MatrixXd::Zero(3, 4);
+    vec << 1, 2, 3;
+    vec2 << 2, 4, 6, 8;
 
-    vec << 1, -2, 3;
+#if 0
+    std::cout << "vec: " << vec << std::endl;
+    std::cout << "vec2: " << vec2.transpose() << std::endl;
+    mat.rowwise() += vec2.transpose();
+    std::cout << "mat: " << std::endl << mat.array().colwise() * vec.array() << std::endl;
+#endif
+
+    //std::cout << vec * vec2 << std::endl;
 
     //std::cout << "Activations:" << std::endl;
     //std::cout << sig(vec) << std::endl << std::endl << sig(vec, true) << std::endl;

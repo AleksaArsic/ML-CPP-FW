@@ -139,7 +139,7 @@ namespace NNFramework
             void __forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx);
 
             // Back propagation
-            void __backPropagation(const uint32_t rowIdx);
+            void __backPropagation(const Eigen::MatrixXd& expData);
 
             // Calculate loss
             // Return values: tuple[0] = loss, tuple[1] = metrics
