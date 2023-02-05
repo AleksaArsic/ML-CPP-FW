@@ -302,31 +302,56 @@ namespace NNFramework
     void Model::__backPropagation(const Eigen::MatrixXd& expData)
     {
         // calculate gradients of the output layer
-        std::shared_ptr<Eigen::MatrixXd> outLayerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
-        std::shared_ptr<Eigen::MatrixXd> outLayerWGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerWGradients();
-        std::shared_ptr<Eigen::MatrixXd> outLayerBGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerBGradients();
+        std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
+        std::shared_ptr<Eigen::MatrixXd> layerWGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerWGradients();
+        std::shared_ptr<Eigen::MatrixXd> layerBGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerBGradients();
         std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(mLayersNo - 1)]->get_mLayerZActivated();
 
         // calculate derivative of the loss based on the output activation
-        Eigen::VectorXd lossDerivative = (*mLossPtr)(expData.transpose(), *outLayerZActivated, true);
+        Eigen::VectorXd lossDerivative = (*mLossPtr)(expData.transpose(), *layerZActivated, true);
         // calculate derivative of the activated values of output layer
-        Eigen::VectorXd outLayerZActivationDer = (*(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->mActivationPtr))(*outLayerZActivated);
+        Eigen::VectorXd layerZActivationDer = (*(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->mActivationPtr))(*layerZActivated);
         // calculate elementwise product dL/dY * dA / dZ
-        lossDerivative = lossDerivative.cwiseProduct(outLayerZActivationDer);
+        lossDerivative = lossDerivative.cwiseProduct(layerZActivationDer);
         // calculate overall gradient of the output layer
         // dL/dW = dL/dY * dY/dZ * dZ/dW
         // .rowwise() assignment will boradcast prevLayerZActivated column vector 
-        // to all rows of outLayerWGradients
-        (*outLayerWGradients).rowwise() = (*prevLayerZActivated).reshaped().transpose();
-        (*outLayerWGradients) = (*outLayerWGradients).array().colwise() * lossDerivative.array();
+        // to all rows of layerWGradients
+        (*layerWGradients).rowwise() = (*prevLayerZActivated).reshaped().transpose();
+        (*layerWGradients) = (*layerWGradients).array().colwise() * lossDerivative.array();
 
         // calculate gradient of the bias term in output layer
         // dL/dB = dL/dY * dY/dZ * 1
         // we stored the loss derivative in respect to the output layer Z activated derivative 
         // in variable lossDerivative
-        (*outLayerBGradients) = lossDerivative;
+        (*layerBGradients) = lossDerivative;
 
         // calculate gradients of the rest of the layers
+        // skip first and last layer
+        for (uint32_t i = (mLayersNo - 2); i > 0; --i)
+        {
+            std::shared_ptr<Eigen::MatrixXd> nextLayerWeights = mLayers[NEXT_LAYER_IDX(i)]->get_mLayerWeights();
+            layerZActivated = mLayers[i]->get_mLayerZActivated();
+            layerWGradients = mLayers[i]->get_mLayerWGradients();
+            layerBGradients = mLayers[i]->get_mLayerBGradients();
+            prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
+
+            // dL/dA = delta^T * nextLayerWeights
+            lossDerivative = lossDerivative.transpose() * (*nextLayerWeights);
+           
+            // calculate layerZActivationDer
+            layerZActivationDer = (*(mLayers[i]->mActivationPtr))(*layerZActivated);
+
+            // dL/dB = dL/dA (dotprod) layerZActivationDer
+            (*layerBGradients) = lossDerivative.cwiseProduct(layerZActivationDer);
+
+            // dL/dW = dL/dA (dotprod) layerZActivationDer (dotprod) prevLayerZActivated
+            (*layerWGradients).colwise() = (*layerBGradients).reshaped();
+            (*layerWGradients) = (*layerWGradients).array().rowwise() * (*prevLayerZActivated).reshaped().array().transpose();
+
+            // loss derivative for the next layer in back prop algorithm
+            lossDerivative = (*layerBGradients);
+        }
 
     }
 

@@ -10,5 +10,6 @@
 #define OUTPUT_LAYER_IDX(noOfLayers) (noOfLayers - 1) // forgive me my ugly 'C' past. :) 
 
 #define PREVIOUS_LAYER_IDX(currentIdx) (currentIdx - 1)
+#define NEXT_LAYER_IDX(currentIdx) (currentIdx + 1)
 
 #endif
