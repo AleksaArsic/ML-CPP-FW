@@ -95,18 +95,16 @@ namespace NNFramework
 
                
             }
-            std::cout << loss << std::endl << std::endl;
-            std::cout << "Loss: " << loss.sum() / inputData.rows() <<  std::endl;
 
             // save loss and metrics of each epoh
-            //mHistory.hLoss.resize(ep + 1);
-            //mHistory.hLoss[ep] = loss;
+            mHistory.hLoss.resize(ep + 1);
+            mHistory.hLoss[ep] = loss.sum() / inputData.rows();
 
             mHistory.hAccuracy.resize(ep + 1);
             mHistory.hAccuracy[ep] = metrics;
 
-            //std::cout << mHistory.hLoss << std::endl;
-            //std::cout << mHistory.hAccuracy << std::endl;
+            std::cout << mHistory.hLoss << std::endl;
+            std::cout << mHistory.hAccuracy << std::endl;
 
             // if the result of current epoch is better than overall best training result
             // save relevant model coefficients
@@ -297,7 +295,6 @@ namespace NNFramework
 
             // apply activation functor to the layer Z activated values
             (*layerZActivated) = (*(mLayers[i]->mActivationPtr))(*layerZ);
-            std::cout << "layerZActivated: " << *(layerZActivated) << std::endl; 
         } 
     }
 
@@ -309,7 +306,7 @@ namespace NNFramework
         std::shared_ptr<Eigen::MatrixXd> outLayerWGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerWGradients();
         std::shared_ptr<Eigen::MatrixXd> outLayerBGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerBGradients();
         std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(mLayersNo - 1)]->get_mLayerZActivated();
-        
+
         // calculate derivative of the loss based on the output activation
         Eigen::VectorXd lossDerivative = (*mLossPtr)(expData.transpose(), *outLayerZActivated, true);
         // calculate derivative of the activated values of output layer
