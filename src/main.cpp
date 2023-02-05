@@ -14,7 +14,9 @@ int main()
     model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Sigmoid>()));
     model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::Sigmoid>()));
 
-    model.compileModel(Loss::LossType<Loss::BinaryCrossEntropy>(), Metrics::MetricsType<Metrics::MeanSquaredError>());
+    model.compileModel(Loss::LossType<Loss::BinaryCrossEntropy>(), 
+                       Metrics::MetricsType<Metrics::MeanSquaredError>(), 
+                       Optimizers::OptimizersType<Optimizers::StohasticGradientDescent>());
     model.modelSummary();
 
     // read input data and labels from input file
@@ -37,7 +39,7 @@ int main()
                     0.20, 0.22, 0.24,
                     0.26, 0.28, 0.30,
                     0.32, 0.34, 0.36;
-    model.modelFit(dummyInData, dummyOutData, 1);
+    model.modelFit(dummyInData, dummyOutData, 10);
 
     Activations::LeakyRelu sig;
     Eigen::VectorXd vec(3);

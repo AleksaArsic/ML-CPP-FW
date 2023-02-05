@@ -9,6 +9,7 @@
 #include "Activations.hpp"
 #include "Loss.hpp"
 #include "Metrics.hpp"
+#include "Optimizers.hpp"
 #include "../Common/Common.hpp"
 
 namespace NNFramework
@@ -23,6 +24,9 @@ namespace NNFramework
             // Metrics functor unique_ptr
             std::unique_ptr<Metrics::MetricsFunctor> mMetricsPtr;
 
+            // Optimizer functor unique_ptr
+            std::unique_ptr<Optimizers::OptimizersFunctor> mOptimizerPtr;
+
             Model() : mLearnableCoeffs(0), mLayersNo(0), mIsCompiled(false) { }
 
             ~Model() = default;
@@ -31,14 +35,17 @@ namespace NNFramework
             bool addLayer(Layers::Layer layer);
 
             // Compile model with added layers, optimizer, loss function and metrics 
-            template<class X, class Y>
-            bool compileModel(Loss::LossType<X>, Metrics::MetricsType<Y>)
+            template<class X, class Y, class Z>
+            bool compileModel(Loss::LossType<X>, Metrics::MetricsType<Y>, Optimizers::OptimizersType<Z>)
             {
                 // bind loss functor to the neural network model
                 mLossPtr = std::make_unique<X>();
 
-                // bind metrics functor  to the neural network model
+                // bind metrics functor to the neural network model
                 mMetricsPtr = std::make_unique<Y>();
+
+                // bind optimizer functor to the neural network model
+                mOptimizerPtr = std::make_unique<Z>();
 
                 // initialize all layers coefficients
                 this->__initializeLayers();

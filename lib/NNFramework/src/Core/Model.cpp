@@ -76,7 +76,7 @@ namespace NNFramework
             double metrics;
 
             // for each data row in inputData
-            for (uint32_t rowIdx = 0; rowIdx < 1 /*inputData.rows()*/; rowIdx++)
+            for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
             {
                 // forward pass trough NNetwork
                 __forwardPass(inputData, rowIdx);
@@ -88,9 +88,9 @@ namespace NNFramework
                 //std::cout << "Epoch: " << ep << " -> Loss: " << loss << " Accuracy: " << metrics << "\r";
                 //std::cout.flush();  
 
-
                 // backpropagation trough the NNetwork
                 __backPropagation(expectedData.row(rowIdx));
+
                 // update layer coefficients
 
                
@@ -102,9 +102,6 @@ namespace NNFramework
 
             mHistory.hAccuracy.resize(ep + 1);
             mHistory.hAccuracy[ep] = metrics;
-
-            std::cout << mHistory.hLoss << std::endl;
-            std::cout << mHistory.hAccuracy << std::endl;
 
             // if the result of current epoch is better than overall best training result
             // save relevant model coefficients
@@ -167,6 +164,8 @@ namespace NNFramework
         }
         std::cout << "Total learnable coefficients = " << mLearnableCoeffs << std::endl;
         std::cout << "Loss function: " << mLossPtr->name() << std::endl;
+        std::cout << "Metrics: " << mMetricsPtr->name() << std::endl;
+        std::cout << "Optimizer: " << mOptimizerPtr->name() << std::endl;
         std::cout << "**************************************" << std::endl;
 
     }

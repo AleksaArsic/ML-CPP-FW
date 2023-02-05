@@ -7,8 +7,9 @@
 #include "inc/Core/Activations.hpp"
 #include "inc/Core/Loss.hpp"
 #include "inc/Core/Metrics.hpp"
+#include "inc/Core/Optimizers.hpp"
 
-// Include Eigen as it comes as a part of the NNFramework
+// Include Eigen as a linear algebra backend of NNFramework
 #include "inc/Eigen/Dense"
 
 #endif
