@@ -232,13 +232,16 @@ namespace NNFramework
             std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
             std::shared_ptr<Eigen::MatrixXd> layerZActivated = (*it)->get_mLayerZActivated();
             std::shared_ptr<Eigen::MatrixXd> layerWGradients = (*it)->get_mLayerWGradients();
+            std::shared_ptr<Eigen::MatrixXd> layerBGradients = (*it)->get_mLayerBGradients();
 
             *layerZ = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
             *layerZActivated = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
 
             // gradients of Weights matrix has the same dimensions as the Weights matrix
             *layerWGradients = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
-            
+            // gradients of Bias matrix has the same dimensions as the Bias matrix
+            *layerBGradients = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
+
             if(INPUT_LAYER_IDX == layerId)
             {
                 // Input layer does not contain Weights, Biases nor Activation
@@ -304,23 +307,27 @@ namespace NNFramework
         // calculate gradients of the output layer
         std::shared_ptr<Eigen::MatrixXd> outLayerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
         std::shared_ptr<Eigen::MatrixXd> outLayerWGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerWGradients();
+        std::shared_ptr<Eigen::MatrixXd> outLayerBGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerBGradients();
         std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(mLayersNo - 1)]->get_mLayerZActivated();
-
+        
         // calculate derivative of the loss based on the output activation
         Eigen::VectorXd lossDerivative = (*mLossPtr)(expData.transpose(), *outLayerZActivated, true);
         // calculate derivative of the activated values of output layer
         Eigen::VectorXd outLayerZActivationDer = (*(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->mActivationPtr))(*outLayerZActivated);
         // calculate elementwise product dL/dY * dA / dZ
         lossDerivative = lossDerivative.cwiseProduct(outLayerZActivationDer);
-        std::cout << "Loss derivative: " << lossDerivative << std::endl << std::endl;
-        std::cout << "outLayerZActivationDer: " << outLayerZActivationDer << std::endl << std::endl;
-        std::cout << "Loss der * prevLayerZAc der: " << lossDerivative << std::endl;
-        std::cout << "prevLayerActivations: " << (*prevLayerZActivated).transpose() << std::endl;
         // calculate overall gradient of the output layer
         // dL/dW = dL/dY * dY/dZ * dZ/dW
+        // .rowwise() assignment will boradcast prevLayerZActivated column vector 
+        // to all rows of outLayerWGradients
         (*outLayerWGradients).rowwise() = (*prevLayerZActivated).reshaped().transpose();
         (*outLayerWGradients) = (*outLayerWGradients).array().colwise() * lossDerivative.array();
-        std::cout << "outLayerWGradients: " << std::endl << (*outLayerWGradients) << std::endl;
+
+        // calculate gradient of the bias term in output layer
+        // dL/dB = dL/dY * dY/dZ * 1
+        // we stored the loss derivative in respect to the output layer Z activated derivative 
+        // in variable lossDerivative
+        (*outLayerBGradients) = lossDerivative;
 
         // calculate gradients of the rest of the layers
 
