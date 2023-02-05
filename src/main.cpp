@@ -8,15 +8,17 @@ using namespace NNFramework;
 
 int main()
 {
-    Model model;
+    Model::Model model;
+
+    Model::ModelConfiguration::ModelConfiguration modelConfig { Loss::LossType<Loss::BinaryCrossEntropy>(), 
+                                                                Metrics::MetricsType<Metrics::MeanSquaredError>(), 
+                                                                Optimizers::OptimizersType<Optimizers::StohasticGradientDescent>() };
 
     model.addLayer(Layers::Dense(3)); // or -> model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::InputActivation>()));
     model.addLayer(Layers::Dense(4, Activations::ActivationType<Activations::Sigmoid>()));
     model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::Sigmoid>()));
 
-    model.compileModel(Loss::LossType<Loss::BinaryCrossEntropy>(), 
-                       Metrics::MetricsType<Metrics::MeanSquaredError>(), 
-                       Optimizers::OptimizersType<Optimizers::StohasticGradientDescent>());
+    model.compileModel(modelConfig);
     model.modelSummary();
 
     // read input data and labels from input file

@@ -5,365 +5,368 @@
 
 namespace NNFramework
 {
-    // Add new layer to the NN Model
-    bool Model::addLayer(Layers::Layer layer)
+    namespace Model
     {
-        try
+        // Add new layer to the NN Model
+        bool Model::addLayer(Layers::Layer layer)
         {
-            layer.set_mLayerId(mLayersNo++);
+            try
+            {
+                layer.set_mLayerId(mLayersNo++);
 
-            mLayers.push_back(std::move(std::make_unique<Layers::Layer>(std::move(layer))));
+                mLayers.push_back(std::move(std::make_unique<Layers::Layer>(std::move(layer))));
 
-            return true;
+                return true;
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << __FUNCTION__ << ": ";
+                std::cerr << e.what() << std::endl;
+                return false;
+            }   
         }
-        catch(const std::exception& e)
-        {
-            std::cerr << __FUNCTION__ << ": ";
-            std::cerr << e.what() << std::endl;
-            return false;
-        }   
-    }
 
-    // Save model weights to desired location
-    bool Model::saveModel(std::string modelPath) const
-    {
-        try
+        // Save model weights to desired location
+        bool Model::saveModel(std::string modelPath) const
+        {
+            try
+            {
+                /* Not supported in this version of NNFramework */
+                return false;
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << "Model.saveModel() failed: ";
+                std::cerr << e.what() << '\n';
+                return false;
+            }
+
+        }
+
+        // Load model weights from desired location
+        bool Model::loadModel()
         {
             /* Not supported in this version of NNFramework */
             return false;
         }
-        catch(const std::exception& e)
+
+        // Train compiled model
+        void Model::modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs)
         {
-            std::cerr << "Model.saveModel() failed: ";
-            std::cerr << e.what() << '\n';
-            return false;
+            // check if model is compiled
+            __checkIsModelCompiled(__FUNCTION__);
+
+            // check if input data and expected data are empty
+            __isDataEmpty(__FUNCTION__, inputData);
+            __isDataEmpty(__FUNCTION__, expectedData);
+
+            // check if input data and expected data have same number of rows
+            __checkInExpRowDim(__FUNCTION__, inputData, expectedData);
+
+            // check if input data has the same number of columns as number of rows in input layer of NN
+            // check if expectedData has the same number of columns as number of rows in output layer of NN
+            __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
+            __checkRowColDim(__FUNCTION__, expectedData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
+
+            // Split data to training data - validation data
+
+            // For provided number of epochs train the model
+            for (uint32_t ep = 0; ep < epochs; ++ep)
+            {
+                // loss and metrics
+                Eigen::VectorXd loss(expectedData.cols());
+                double metrics;
+
+                // for each data row in inputData
+                for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
+                {
+                    // forward pass trough NNetwork
+                    __forwardPass(inputData, rowIdx);
+                    
+                    // calculate losses and metrics
+                    auto [l, m] = __calculateLossAndMetrics(expectedData, rowIdx);
+                    loss += l;
+                    metrics = m;
+                    //std::cout << "Epoch: " << ep << " -> Loss: " << loss << " Accuracy: " << metrics << "\r";
+                    //std::cout.flush();  
+
+                    // backpropagation trough the NNetwork
+                    __backPropagation(expectedData.row(rowIdx));
+
+                    // update layer coefficients
+
+                
+                }
+
+                // save loss and metrics of each epoh
+                mHistory.hLoss.resize(ep + 1);
+                mHistory.hLoss[ep] = loss.sum() / inputData.rows();
+
+                mHistory.hAccuracy.resize(ep + 1);
+                mHistory.hAccuracy[ep] = metrics;
+
+                // if the result of current epoch is better than overall best training result
+                // save relevant model coefficients
+            }
+
         }
 
-    }
-
-    // Load model weights from desired location
-    bool Model::loadModel()
-    {
-        /* Not supported in this version of NNFramework */
-        return false;
-    }
-
-    // Train compiled model
-    void Model::modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs)
-    {
-        // check if model is compiled
-        __checkIsModelCompiled(__FUNCTION__);
-
-        // check if input data and expected data are empty
-        __isDataEmpty(__FUNCTION__, inputData);
-        __isDataEmpty(__FUNCTION__, expectedData);
-
-        // check if input data and expected data have same number of rows
-        __checkInExpRowDim(__FUNCTION__, inputData, expectedData);
-
-        // check if input data has the same number of columns as number of rows in input layer of NN
-        // check if expectedData has the same number of columns as number of rows in output layer of NN
-        __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
-        __checkRowColDim(__FUNCTION__, expectedData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
-
-        // Split data to training data - validation data
-
-        // For provided number of epochs train the model
-        for (uint32_t ep = 0; ep < epochs; ++ep)
+        // Trained model predict on provided input data
+        Eigen::MatrixXd Model::modelPredict(Eigen::MatrixXd& inputData)
         {
-            // loss and metrics
-            Eigen::VectorXd loss(expectedData.cols());
-            double metrics;
+            // check if model is compiled
+            __checkIsModelCompiled(__FUNCTION__);
 
+            // check if input data is empty
+            __isDataEmpty(__FUNCTION__, inputData);
+
+            // check if input data has the same number of columns as number of rows in input layer of NN
+            __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
+
+            // start predicting
+            uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()->rows();
+            Eigen::MatrixXd predictedData(inputData.rows(), outputLayerRows);
+            
             // for each data row in inputData
             for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
             {
                 // forward pass trough NNetwork
                 __forwardPass(inputData, rowIdx);
-                
-                // calculate losses and metrics
-                auto [l, m] = __calculateLossAndMetrics(expectedData, rowIdx);
-                loss += l;
-                metrics = m;
-                //std::cout << "Epoch: " << ep << " -> Loss: " << loss << " Accuracy: " << metrics << "\r";
-                //std::cout.flush();  
 
-                // backpropagation trough the NNetwork
-                __backPropagation(expectedData.row(rowIdx));
-
-                // update layer coefficients
-
-               
+                // save outputs
+                std::shared_ptr<Eigen::MatrixXd> outputLayerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
+                Eigen::VectorXd predictions = (*outputLayerZActivated);
+                predictedData.row(rowIdx) = predictions;
             }
 
-            // save loss and metrics of each epoh
-            mHistory.hLoss.resize(ep + 1);
-            mHistory.hLoss[ep] = loss.sum() / inputData.rows();
-
-            mHistory.hAccuracy.resize(ep + 1);
-            mHistory.hAccuracy[ep] = metrics;
-
-            // if the result of current epoch is better than overall best training result
-            // save relevant model coefficients
+            // return output of the Neural Network
+            return predictedData;
         }
 
-    }
-
-    // Trained model predict on provided input data
-    Eigen::MatrixXd Model::modelPredict(Eigen::MatrixXd& inputData)
-    {
-        // check if model is compiled
-        __checkIsModelCompiled(__FUNCTION__);
-
-        // check if input data is empty
-        __isDataEmpty(__FUNCTION__, inputData);
-
-        // check if input data has the same number of columns as number of rows in input layer of NN
-        __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
-
-        // start predicting
-        uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()->rows();
-        Eigen::MatrixXd predictedData(inputData.rows(), outputLayerRows);
-         
-        // for each data row in inputData
-        for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
+        // Show model summary by printing it on std::cout
+        void Model::modelSummary() const
         {
-            // forward pass trough NNetwork
-            __forwardPass(inputData, rowIdx);
+            // check if model is compiled
+            __checkIsModelCompiled(__FUNCTION__);
 
-            // save outputs
-            std::shared_ptr<Eigen::MatrixXd> outputLayerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
-            Eigen::VectorXd predictions = (*outputLayerZActivated);
-            predictedData.row(rowIdx) = predictions;
-        }
-
-        // return output of the Neural Network
-        return predictedData;
-    }
-
-    // Show model summary by printing it on std::cout
-    void Model::modelSummary() const
-    {
-        // check if model is compiled
-        __checkIsModelCompiled(__FUNCTION__);
-
-        std::cout << "**************************************" << std::endl;
-        std::cout << "Model summary: " << std::endl;
-        std::cout << "**************************************" << std::endl;
-
-        for (auto it = mLayers.begin(); it != mLayers.end(); ++it)
-        {
-            std::cout << "Layer: " << static_cast<uint32_t>((*it)->get_mLayerId()) << std::endl;
-            std::cout << "\t Perceptrons = " << static_cast<uint32_t>((*it)->get_mPerceptronNo()) << std::endl;
-            std::cout << "\t Coeffs = " << (*it)->get_mLearnableCoeffs() << std::endl;
-            if(INPUT_LAYER_IDX != (*it)->get_mLayerId())
-            {
-                std::cout << "\t Activation = " << (*it)->mActivationPtr->name() << std::endl;
-            }
             std::cout << "**************************************" << std::endl;
-        }
-        std::cout << "Total learnable coefficients = " << mLearnableCoeffs << std::endl;
-        std::cout << "Loss function: " << mLossPtr->name() << std::endl;
-        std::cout << "Metrics: " << mMetricsPtr->name() << std::endl;
-        std::cout << "Optimizer: " << mOptimizerPtr->name() << std::endl;
-        std::cout << "**************************************" << std::endl;
+            std::cout << "Model summary: " << std::endl;
+            std::cout << "**************************************" << std::endl;
 
-    }
-
-    // Check if model is compiled
-    void Model::__checkIsModelCompiled(std::string fName) const
-    {
-        if(false == mIsCompiled)
-        {
-            std::cout << fName << ": ";
-            throw std::runtime_error("Model is not compiled!");
-        }   
-    }
-
-    // Check if data matrix (Eigen::MatrixXd) is empty
-    // throws an exception if data matrix is empty
-    void Model::__isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const
-    {
-        if(NNFRAMEWORK_ZERO == data.size())
-        {
-            std::cout << fName << ": ";
-            throw std::runtime_error("Matrix is empty!");            
-        }
-    }
-
-    // Check if input data and expected data have the same amount of rows
-    // Check if there is a pair for each input data tensor in expected data and vice versa
-    void Model::__checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const
-    {
-        if(inData.rows() != expData.rows())
-        {
-            std::cout << fName << ": ";
-            throw std::runtime_error("Input data and expected data don't have the same amount of rows! \
-                                        Cannot create pairs (xi, yi) for each data entry.");            
-        }
-    }
-
-    // Check if the input Matrix has the same amount of columns as the number of rows in layer data
-    void Model::__checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const
-    {
-        if(inData.cols() != layerData.rows())
-        {
-            std::cout << fName << ": ";
-            throw std::runtime_error("Input data Matrix does not have the same amount of rows as the number of columns in layer data!");
-        }        
-    }
-
-    // Initialize all layers coefficients
-    void Model::__initializeLayers()
-    {
-        // iterate trough layers
-        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-        {
-            uint8_t layerId = (*it)->get_mLayerId();
-            uint8_t perceptronNo = (*it)->get_mPerceptronNo();
-            uint8_t prevPercNo = (INPUT_LAYER_IDX == layerId ? perceptronNo : mLayers[PREVIOUS_LAYER_IDX(layerId)]->get_mPerceptronNo());
-    
-            // initialize layer coefficients
-            std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
-            std::shared_ptr<Eigen::MatrixXd> layerZ = (*it)->get_mLayerZ();
-            std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
-            std::shared_ptr<Eigen::MatrixXd> layerZActivated = (*it)->get_mLayerZActivated();
-            std::shared_ptr<Eigen::MatrixXd> layerWGradients = (*it)->get_mLayerWGradients();
-            std::shared_ptr<Eigen::MatrixXd> layerBGradients = (*it)->get_mLayerBGradients();
-
-            *layerZ = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
-            *layerZActivated = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
-
-            // gradients of Weights matrix has the same dimensions as the Weights matrix
-            *layerWGradients = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
-            // gradients of Bias matrix has the same dimensions as the Bias matrix
-            *layerBGradients = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
-
-            if(INPUT_LAYER_IDX == layerId)
+            for (auto it = mLayers.begin(); it != mLayers.end(); ++it)
             {
-                // Input layer does not contain Weights, Biases nor Activation
-                *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
-                *layerBias = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
-
-                (*it)->set_mLearnableCoeffs(NNFRAMEWORK_ZERO);
+                std::cout << "Layer: " << static_cast<uint32_t>((*it)->get_mLayerId()) << std::endl;
+                std::cout << "\t Perceptrons = " << static_cast<uint32_t>((*it)->get_mPerceptronNo()) << std::endl;
+                std::cout << "\t Coeffs = " << (*it)->get_mLearnableCoeffs() << std::endl;
+                if(INPUT_LAYER_IDX != (*it)->get_mLayerId())
+                {
+                    std::cout << "\t Activation = " << (*it)->mActivationPtr->name() << std::endl;
+                }
+                std::cout << "**************************************" << std::endl;
             }
-            else
+            std::cout << "Total learnable coefficients = " << mLearnableCoeffs << std::endl;
+            std::cout << "Loss function: " << mModelConfig->mLossPtr->name() << std::endl;
+            std::cout << "Metrics: " << mModelConfig->mMetricsPtr->name() << std::endl;
+            std::cout << "Optimizer: " << mModelConfig->mOptimizerPtr->name() << std::endl;
+            std::cout << "**************************************" << std::endl;
+
+        }
+
+        // Check if model is compiled
+        void Model::__checkIsModelCompiled(std::string fName) const
+        {
+            if(false == mIsCompiled)
             {
-                *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
-                *layerBias = Eigen::MatrixXd::Ones(perceptronNo, MATRIX_COL_INIT_VAL);
+                std::cout << fName << ": ";
+                throw std::runtime_error("Model is not compiled!");
+            }   
+        }
 
-                // calculate learnable coefficients
-                // learnableCoeffs = noOfPerceptrons * (noOfWeights + noOfInputs) + 1 (bias)
-                uint32_t noOfCoeffs = (perceptronNo * (2 * prevPercNo)) + 1;
-
-                (*it)->set_mLearnableCoeffs(noOfCoeffs);
-                mLearnableCoeffs += noOfCoeffs;
+        // Check if data matrix (Eigen::MatrixXd) is empty
+        // throws an exception if data matrix is empty
+        void Model::__isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const
+        {
+            if(NNFRAMEWORK_ZERO == data.size())
+            {
+                std::cout << fName << ": ";
+                throw std::runtime_error("Matrix is empty!");            
             }
         }
-    }
 
-    // Forward pass
-    void Model::__forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx)
-    {
-        // set input layer data
-        std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[INPUT_LAYER_IDX]->get_mLayerZ();
-        std::shared_ptr<Eigen::MatrixXd> inputLayerZActivated = mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated();
-
-        *inputLayerZ = inputData.row(rowIdx);
-        (*inputLayerZ).transposeInPlace();
-        
-        // passtrough input values as activated
-        // x = f(x)
-        (*inputLayerZActivated) = (*inputLayerZ);     
-
-        // iterate trough layers 
-        // skip first layer, as first (input) layer does not have weights nor activations
-        for (uint32_t i = 1; i < mLayersNo; ++i)
+        // Check if input data and expected data have the same amount of rows
+        // Check if there is a pair for each input data tensor in expected data and vice versa
+        void Model::__checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const
         {
-            // get previous layer data
-            std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
-
-            // get current layer data
-            std::shared_ptr<Eigen::MatrixXd> layerWeights = mLayers[i]->get_mLayerWeights();
-            std::shared_ptr<Eigen::MatrixXd> layerZ = mLayers[i]->get_mLayerZ();
-            std::shared_ptr<Eigen::MatrixXd> layerBias = mLayers[i]->get_mLayerBias();
-            std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[i]->get_mLayerZActivated();
-
-            // z = Wx + b
-            (*layerZ) = ((*layerWeights) * (*prevLayerZActivated)) + (*layerBias);
-
-            // apply activation functor to the layer Z activated values
-            (*layerZActivated) = (*(mLayers[i]->mActivationPtr))(*layerZ);
-        } 
-    }
-
-    // Back propagation
-    void Model::__backPropagation(const Eigen::MatrixXd& expData)
-    {
-        // calculate gradients of the output layer
-        std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
-        std::shared_ptr<Eigen::MatrixXd> layerWGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerWGradients();
-        std::shared_ptr<Eigen::MatrixXd> layerBGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerBGradients();
-        std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(mLayersNo - 1)]->get_mLayerZActivated();
-
-        // calculate derivative of the loss based on the output activation
-        Eigen::VectorXd lossDerivative = (*mLossPtr)(expData.transpose(), *layerZActivated, true);
-        // calculate derivative of the activated values of output layer
-        Eigen::VectorXd layerZActivationDer = (*(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->mActivationPtr))(*layerZActivated);
-        // calculate elementwise product dL/dY * dA / dZ
-        lossDerivative = lossDerivative.cwiseProduct(layerZActivationDer);
-        // calculate overall gradient of the output layer
-        // dL/dW = dL/dY * dY/dZ * dZ/dW
-        // .rowwise() assignment will boradcast prevLayerZActivated column vector 
-        // to all rows of layerWGradients
-        (*layerWGradients).rowwise() = (*prevLayerZActivated).reshaped().transpose();
-        (*layerWGradients) = (*layerWGradients).array().colwise() * lossDerivative.array();
-
-        // calculate gradient of the bias term in output layer
-        // dL/dB = dL/dY * dY/dZ * 1
-        // we stored the loss derivative in respect to the output layer Z activated derivative 
-        // in variable lossDerivative
-        (*layerBGradients) = lossDerivative;
-
-        // calculate gradients of the rest of the layers
-        // skip first and last layer
-        for (uint32_t i = (mLayersNo - 2); i > 0; --i)
-        {
-            std::shared_ptr<Eigen::MatrixXd> nextLayerWeights = mLayers[NEXT_LAYER_IDX(i)]->get_mLayerWeights();
-            layerZActivated = mLayers[i]->get_mLayerZActivated();
-            layerWGradients = mLayers[i]->get_mLayerWGradients();
-            layerBGradients = mLayers[i]->get_mLayerBGradients();
-            prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
-
-            // dL/dA = delta^T * nextLayerWeights
-            lossDerivative = lossDerivative.transpose() * (*nextLayerWeights);
-           
-            // calculate layerZActivationDer
-            layerZActivationDer = (*(mLayers[i]->mActivationPtr))(*layerZActivated);
-
-            // dL/dB = dL/dA (dotprod) layerZActivationDer
-            (*layerBGradients) = lossDerivative.cwiseProduct(layerZActivationDer);
-
-            // dL/dW = dL/dA (dotprod) layerZActivationDer (dotprod) prevLayerZActivated
-            (*layerWGradients).colwise() = (*layerBGradients).reshaped();
-            (*layerWGradients) = (*layerWGradients).array().rowwise() * (*prevLayerZActivated).reshaped().array().transpose();
-
-            // loss derivative for the next layer in back prop algorithm
-            lossDerivative = (*layerBGradients);
+            if(inData.rows() != expData.rows())
+            {
+                std::cout << fName << ": ";
+                throw std::runtime_error("Input data and expected data don't have the same amount of rows! \
+                                            Cannot create pairs (xi, yi) for each data entry.");            
+            }
         }
 
-    }
+        // Check if the input Matrix has the same amount of columns as the number of rows in layer data
+        void Model::__checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const
+        {
+            if(inData.cols() != layerData.rows())
+            {
+                std::cout << fName << ": ";
+                throw std::runtime_error("Input data Matrix does not have the same amount of rows as the number of columns in layer data!");
+            }        
+        }
 
-    // Return values: tuple[0] = loss, tuple[1] = metrics
-    std::tuple<Eigen::VectorXd, double> Model::__calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
-    {
-        Eigen::MatrixXd outputLayerZActivated = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated());
-        Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZActivated.data(), outputLayerZActivated.cols() * outputLayerZActivated.rows()));
+        // Initialize all layers coefficients
+        void Model::__initializeLayers()
+        {
+            // iterate trough layers
+            for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+            {
+                uint8_t layerId = (*it)->get_mLayerId();
+                uint8_t perceptronNo = (*it)->get_mPerceptronNo();
+                uint8_t prevPercNo = (INPUT_LAYER_IDX == layerId ? perceptronNo : mLayers[PREVIOUS_LAYER_IDX(layerId)]->get_mPerceptronNo());
         
-        Eigen::VectorXd expectedOutput = expectedData.row(rowIdx);
-        Eigen::VectorXd loss = (*mLossPtr)(expectedOutput, modelOutput);
-        double metrics = (*mMetricsPtr)(modelOutput, expectedOutput);       
+                // initialize layer coefficients
+                std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
+                std::shared_ptr<Eigen::MatrixXd> layerZ = (*it)->get_mLayerZ();
+                std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
+                std::shared_ptr<Eigen::MatrixXd> layerZActivated = (*it)->get_mLayerZActivated();
+                std::shared_ptr<Eigen::MatrixXd> layerWGradients = (*it)->get_mLayerWGradients();
+                std::shared_ptr<Eigen::MatrixXd> layerBGradients = (*it)->get_mLayerBGradients();
 
-        return std::make_tuple(loss, metrics);    
+                *layerZ = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
+                *layerZActivated = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
+
+                // gradients of Weights matrix has the same dimensions as the Weights matrix
+                *layerWGradients = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
+                // gradients of Bias matrix has the same dimensions as the Bias matrix
+                *layerBGradients = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
+
+                if(INPUT_LAYER_IDX == layerId)
+                {
+                    // Input layer does not contain Weights, Biases nor Activation
+                    *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
+                    *layerBias = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
+
+                    (*it)->set_mLearnableCoeffs(NNFRAMEWORK_ZERO);
+                }
+                else
+                {
+                    *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
+                    *layerBias = Eigen::MatrixXd::Ones(perceptronNo, MATRIX_COL_INIT_VAL);
+
+                    // calculate learnable coefficients
+                    // learnableCoeffs = noOfPerceptrons * (noOfWeights + noOfInputs) + 1 (bias)
+                    uint32_t noOfCoeffs = (perceptronNo * (2 * prevPercNo)) + 1;
+
+                    (*it)->set_mLearnableCoeffs(noOfCoeffs);
+                    mLearnableCoeffs += noOfCoeffs;
+                }
+            }
+        }
+
+        // Forward pass
+        void Model::__forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx)
+        {
+            // set input layer data
+            std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[INPUT_LAYER_IDX]->get_mLayerZ();
+            std::shared_ptr<Eigen::MatrixXd> inputLayerZActivated = mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated();
+
+            *inputLayerZ = inputData.row(rowIdx);
+            (*inputLayerZ).transposeInPlace();
+            
+            // passtrough input values as activated
+            // x = f(x)
+            (*inputLayerZActivated) = (*inputLayerZ);     
+
+            // iterate trough layers 
+            // skip first layer, as first (input) layer does not have weights nor activations
+            for (uint32_t i = 1; i < mLayersNo; ++i)
+            {
+                // get previous layer data
+                std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
+
+                // get current layer data
+                std::shared_ptr<Eigen::MatrixXd> layerWeights = mLayers[i]->get_mLayerWeights();
+                std::shared_ptr<Eigen::MatrixXd> layerZ = mLayers[i]->get_mLayerZ();
+                std::shared_ptr<Eigen::MatrixXd> layerBias = mLayers[i]->get_mLayerBias();
+                std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[i]->get_mLayerZActivated();
+
+                // z = Wx + b
+                (*layerZ) = ((*layerWeights) * (*prevLayerZActivated)) + (*layerBias);
+
+                // apply activation functor to the layer Z activated values
+                (*layerZActivated) = (*(mLayers[i]->mActivationPtr))(*layerZ);
+            } 
+        }
+
+        // Back propagation
+        void Model::__backPropagation(const Eigen::MatrixXd& expData)
+        {
+            // calculate gradients of the output layer
+            std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
+            std::shared_ptr<Eigen::MatrixXd> layerWGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerWGradients();
+            std::shared_ptr<Eigen::MatrixXd> layerBGradients = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerBGradients();
+            std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(mLayersNo - 1)]->get_mLayerZActivated();
+
+            // calculate derivative of the loss based on the output activation
+            Eigen::VectorXd lossDerivative = ((*mModelConfig->mLossPtr))(expData.transpose(), *layerZActivated, true);
+            // calculate derivative of the activated values of output layer
+            Eigen::VectorXd layerZActivationDer = (*(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->mActivationPtr))(*layerZActivated);
+            // calculate elementwise product dL/dY * dA / dZ
+            lossDerivative = lossDerivative.cwiseProduct(layerZActivationDer);
+            // calculate overall gradient of the output layer
+            // dL/dW = dL/dY * dY/dZ * dZ/dW
+            // .rowwise() assignment will boradcast prevLayerZActivated column vector 
+            // to all rows of layerWGradients
+            (*layerWGradients).rowwise() = (*prevLayerZActivated).reshaped().transpose();
+            (*layerWGradients) = (*layerWGradients).array().colwise() * lossDerivative.array();
+
+            // calculate gradient of the bias term in output layer
+            // dL/dB = dL/dY * dY/dZ * 1
+            // we stored the loss derivative in respect to the output layer Z activated derivative 
+            // in variable lossDerivative
+            (*layerBGradients) = lossDerivative;
+
+            // calculate gradients of the rest of the layers
+            // skip first and last layer
+            for (uint32_t i = (mLayersNo - 2); i > 0; --i)
+            {
+                std::shared_ptr<Eigen::MatrixXd> nextLayerWeights = mLayers[NEXT_LAYER_IDX(i)]->get_mLayerWeights();
+                layerZActivated = mLayers[i]->get_mLayerZActivated();
+                layerWGradients = mLayers[i]->get_mLayerWGradients();
+                layerBGradients = mLayers[i]->get_mLayerBGradients();
+                prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
+
+                // dL/dA = delta^T * nextLayerWeights
+                lossDerivative = lossDerivative.transpose() * (*nextLayerWeights);
+            
+                // calculate layerZActivationDer
+                layerZActivationDer = (*(mLayers[i]->mActivationPtr))(*layerZActivated);
+
+                // dL/dB = dL/dA (dotprod) layerZActivationDer
+                (*layerBGradients) = lossDerivative.cwiseProduct(layerZActivationDer);
+
+                // dL/dW = dL/dA (dotprod) layerZActivationDer (dotprod) prevLayerZActivated
+                (*layerWGradients).colwise() = (*layerBGradients).reshaped();
+                (*layerWGradients) = (*layerWGradients).array().rowwise() * (*prevLayerZActivated).reshaped().array().transpose();
+
+                // loss derivative for the next layer in backpropagation algorithm
+                lossDerivative = (*layerBGradients);
+            }
+
+        }
+
+        // Return values: tuple[0] = loss, tuple[1] = metrics
+        std::tuple<Eigen::VectorXd, double> Model::__calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
+        {
+            Eigen::MatrixXd outputLayerZActivated = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated());
+            Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZActivated.data(), outputLayerZActivated.cols() * outputLayerZActivated.rows()));
+            
+            Eigen::VectorXd expectedOutput = expectedData.row(rowIdx);
+            Eigen::VectorXd loss = ((*mModelConfig->mLossPtr))(expectedOutput, modelOutput);
+            double metrics = ((*mModelConfig->mMetricsPtr))(modelOutput, expectedOutput);       
+
+            return std::make_tuple(loss, metrics);    
+        }
     }
 }

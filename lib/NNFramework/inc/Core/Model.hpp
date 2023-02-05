@@ -7,152 +7,140 @@
 #include "../Eigen/Dense"
 #include "Layers.hpp"
 #include "Activations.hpp"
-#include "Loss.hpp"
-#include "Metrics.hpp"
-#include "Optimizers.hpp"
+#include "ModelConfiguration.hpp"
 #include "../Common/Common.hpp"
 
 namespace NNFramework
 {
-    class Model final
+    namespace Model
     {
-        public:
-            
-            // Loss functor unique_ptr
-            std::unique_ptr<Loss::LossFunctor> mLossPtr;
+        class Model final
+        {
+            public:
 
-            // Metrics functor unique_ptr
-            std::unique_ptr<Metrics::MetricsFunctor> mMetricsPtr;
+                Model() : mLearnableCoeffs(0), mLayersNo(0), mIsCompiled(false) { }
 
-            // Optimizer functor unique_ptr
-            std::unique_ptr<Optimizers::OptimizersFunctor> mOptimizerPtr;
+                ~Model() = default;
 
-            Model() : mLearnableCoeffs(0), mLayersNo(0), mIsCompiled(false) { }
+                // Add new layer to the NN Model
+                bool addLayer(Layers::Layer layer);
 
-            ~Model() = default;
+                // Compile model with added layers, optimizer, loss function and metrics 
+                bool compileModel(ModelConfiguration::ModelConfiguration& modelConfig)
+                {
+                    // bind model configuration to the neural network model
+                    mModelConfig = std::make_unique<ModelConfiguration::ModelConfiguration>(std::move(modelConfig));
+                    
+                    // initialize all layers coefficients
+                    this->__initializeLayers();
 
-            // Add new layer to the NN Model
-            bool addLayer(Layers::Layer layer);
+                    // set model compiled 
+                    this->mIsCompiled = true;
 
-            // Compile model with added layers, optimizer, loss function and metrics 
-            template<class X, class Y, class Z>
-            bool compileModel(Loss::LossType<X>, Metrics::MetricsType<Y>, Optimizers::OptimizersType<Z>)
-            {
-                // bind loss functor to the neural network model
-                mLossPtr = std::make_unique<X>();
+                    return this->mIsCompiled;
+                }
 
-                // bind metrics functor to the neural network model
-                mMetricsPtr = std::make_unique<Y>();
+                // Save model weights to desired location
+                bool saveModel(std::string modelPath = "./model.csv") const;
 
-                // bind optimizer functor to the neural network model
-                mOptimizerPtr = std::make_unique<Z>();
+                // Load model weights from desired location
+                bool loadModel();
+                
+                // Train desired model
+                // Expected inputData format:
+                // Eigen::MatrixXd
+                // Data:
+                // 1)   [x11, x12, ..., x1m]
+                // 2)   [x21, x22, ..., x2m]
+                // ...
+                // n)   [xn1, xn2, ..., xnm]
+                // 
+                // Expected expectedData format:
+                // Eigen::MatrixXd
+                // Data:
+                // 1)   [y11, y12, ..., y1m]
+                // 2)   [y21, y22, ..., y2m]
+                // ...
+                // n)   [yn1, yn2, ..., ynm]
+                //         
+                void modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs);
 
-                // initialize all layers coefficients
-                this->__initializeLayers();
+                // Trained model predict on provided input data
+                // Expected inputData format:
+                // Eigen::MatrixXd
+                // Data:
+                // 1)   [x11, x12, ..., x1m]
+                // 2)   [x21, x22, ..., x2m]
+                // ...
+                // n)   [xn1, xn2, ..., xnm]
+                // 
+                // Return value data format:
+                // Eigen::MatrixXd
+                // Data:
+                // 1)   [y11, y12, ..., y1m]
+                // 2)   [y21, y22, ..., y2m]
+                // ...
+                // n)   [yn1, yn2, ..., ynm]
+                //
+                Eigen::MatrixXd modelPredict(Eigen::MatrixXd& inputData);
 
-                // set model compiled 
-                this->mIsCompiled = true;
+                // Show model summary by printing it on std::cout
+                void modelSummary() const;
 
-                return this->mIsCompiled;
-            }
+                // Getters
+                uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
+                uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
+                bool get_mIsCompiled() const noexcept { return this->mIsCompiled; }
 
-            // Save model weights to desired location
-            bool saveModel(std::string modelPath = "./model.csv") const;
+            private:
+                // saves model training history
+                // Loss, Validation Loss, Accuracy and Validation Accuracy
+                struct ModelHistory final
+                {
+                    Eigen::VectorXd hLoss;
+                    Eigen::VectorXd hValLoss;
+                    Eigen::VectorXd hAccuracy;
+                    Eigen::VectorXd hValAccuracy;
+                };
 
-            // Load model weights from desired location
-            bool loadModel();
-            
-            // Train desired model
-            // Expected inputData format:
-            // Eigen::MatrixXd
-            // Data:
-            // 1)   [x11, x12, ..., x1m]
-            // 2)   [x21, x22, ..., x2m]
-            // ...
-            // n)   [xn1, xn2, ..., xnm]
-            // 
-            // Expected expectedData format:
-            // Eigen::MatrixXd
-            // Data:
-            // 1)   [y11, y12, ..., y1m]
-            // 2)   [y21, y22, ..., y2m]
-            // ...
-            // n)   [yn1, yn2, ..., ynm]
-            //         
-            void modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs);
+                ModelHistory mHistory;
 
-            // Trained model predict on provided input data
-            // Expected inputData format:
-            // Eigen::MatrixXd
-            // Data:
-            // 1)   [x11, x12, ..., x1m]
-            // 2)   [x21, x22, ..., x2m]
-            // ...
-            // n)   [xn1, xn2, ..., xnm]
-            // 
-            // Return value data format:
-            // Eigen::MatrixXd
-            // Data:
-            // 1)   [y11, y12, ..., y1m]
-            // 2)   [y21, y22, ..., y2m]
-            // ...
-            // n)   [yn1, yn2, ..., ynm]
-            //
-            Eigen::MatrixXd modelPredict(Eigen::MatrixXd& inputData);
+                std::unique_ptr<ModelConfiguration::ModelConfiguration> mModelConfig;
 
-            // Show model summary by printing it on std::cout
-            void modelSummary() const;
+                std::vector<std::unique_ptr<Layers::Layer>> mLayers; // Number of Layers is not known in advance thus, std::vector is more suitable for storing Layers
+                uint32_t mLearnableCoeffs;
+                uint8_t mLayersNo;
+                bool mIsCompiled;
 
-            // Getters
-            uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
-            uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
-            bool get_mIsCompiled() const noexcept { return this->mIsCompiled; }
+                // Check if model is compiled
+                void __checkIsModelCompiled(std::string fName) const;
 
-        private:
-            // saves model training history
-            // Loss, Validation Loss, Accuracy and Validation Accuracy
-            struct ModelHistory final
-            {
-                Eigen::VectorXd hLoss;
-                Eigen::VectorXd hValLoss;
-                Eigen::VectorXd hAccuracy;
-                Eigen::VectorXd hValAccuracy;
-            };
+                // Check if data matrix (Eigen::MatrixXd) is empty
+                // throws an exception if data matrix is empty
+                void __isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const;
 
-            ModelHistory mHistory;
-            std::vector<std::unique_ptr<Layers::Layer>> mLayers; // Number of Layers is not known in advance thus, std::vector is more suitable for storing Layers
-            uint32_t mLearnableCoeffs;
-            uint8_t mLayersNo;
-            bool mIsCompiled;
+                // Check if input data and expected data have the same amount of rows
+                // Check if there is a pair for each input data tensor in expected data and vice versa
+                void __checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const;
 
-            // Check if model is compiled
-            void __checkIsModelCompiled(std::string fName) const;
+                // Check if the input Matrix has the same amount of columns as the number of rows in layer data
+                void __checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const;
 
-            // Check if data matrix (Eigen::MatrixXd) is empty
-            // throws an exception if data matrix is empty
-            void __isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const;
+                // Initialize all layers coefficients
+                void __initializeLayers();
 
-            // Check if input data and expected data have the same amount of rows
-            // Check if there is a pair for each input data tensor in expected data and vice versa
-            void __checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const;
+                // Forward pass
+                void __forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx);
 
-            // Check if the input Matrix has the same amount of columns as the number of rows in layer data
-            void __checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const;
+                // Back propagation
+                void __backPropagation(const Eigen::MatrixXd& expData);
 
-            // Initialize all layers coefficients
-            void __initializeLayers();
+                // Calculate loss
+                // Return values: tuple[0] = loss, tuple[1] = metrics
+                std::tuple<Eigen::VectorXd, double> __calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
 
-            // Forward pass
-            void __forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx);
-
-            // Back propagation
-            void __backPropagation(const Eigen::MatrixXd& expData);
-
-            // Calculate loss
-            // Return values: tuple[0] = loss, tuple[1] = metrics
-            std::tuple<Eigen::VectorXd, double> __calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
-
-    };
+        };
+    }
 }
 
 #endif
