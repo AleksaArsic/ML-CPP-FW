@@ -109,7 +109,7 @@ namespace NNFramework
                     backPropagation(expectedData.row(rowIdx));
 
                     // update layer coefficients
-
+                    ((*mModelConfig->mOptimizerPtr))(mLayers);
                 }
 
                 // save loss and metrics of each epoh
@@ -367,7 +367,6 @@ namespace NNFramework
                 // loss derivative for the next layer in backpropagation algorithm
                 lossDerivative = (*layerBGradients);
             }
-
         }
 
         // Return values: tuple[0] = loss, tuple[1] = metrics

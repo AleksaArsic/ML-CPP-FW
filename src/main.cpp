@@ -43,6 +43,8 @@ int main()
                     0.32, 0.34, 0.36;
     model.modelFit(dummyInData, dummyOutData, 10);
 
+    std::cout << "Predict: " << std::endl << model.modelPredict(dummyInData) << std::endl << std::endl;
+
     Activations::LeakyRelu sig;
     Eigen::VectorXd vec(3);
     Eigen::VectorXd vec2(4);
