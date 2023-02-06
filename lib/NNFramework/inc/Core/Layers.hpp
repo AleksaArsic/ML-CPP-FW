@@ -40,9 +40,10 @@ namespace NNFramework
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerWeights() const noexcept { return this->mLayerWeights; }
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerZ() const noexcept { return this->mLayerZ; }
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerBias() const noexcept { return this->mLayerBias; }
-                std::shared_ptr<Eigen::MatrixXd> get_mLayerZActivated() const noexcept { return this->mLayerZActivated; }
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerWGradients() const noexcept { return this->mLayerWGradients; }
+                std::shared_ptr<Eigen::MatrixXd> get_mLayerZActivated() const noexcept { return this->mLayerZActivated; }
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerBGradients() const noexcept { return this->mLayerBGradients; }
+
                 // Setters
                 void set_mLayerId(uint8_t id) { this->mLayerId = id; }
                 void set_mLearnableCoeffs(uint32_t coeffsNo) { this->mLearnableCoeffs = coeffsNo; }

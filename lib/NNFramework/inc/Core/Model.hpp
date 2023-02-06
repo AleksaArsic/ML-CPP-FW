@@ -26,19 +26,7 @@ namespace NNFramework
                 bool addLayer(Layers::Layer layer);
 
                 // Compile model with added layers, optimizer, loss function and metrics 
-                bool compileModel(ModelConfiguration::ModelConfiguration& modelConfig)
-                {
-                    // bind model configuration to the neural network model
-                    mModelConfig = std::make_unique<ModelConfiguration::ModelConfiguration>(std::move(modelConfig));
-                    
-                    // initialize all layers coefficients
-                    this->__initializeLayers();
-
-                    // set model compiled 
-                    this->mIsCompiled = true;
-
-                    return this->mIsCompiled;
-                }
+                bool compileModel(ModelConfiguration::ModelConfiguration& modelConfig);
 
                 // Save model weights to desired location
                 bool saveModel(std::string modelPath = "./model.csv") const;
@@ -113,31 +101,31 @@ namespace NNFramework
                 bool mIsCompiled;
 
                 // Check if model is compiled
-                void __checkIsModelCompiled(std::string fName) const;
+                void checkIsModelCompiled(std::string fName) const;
 
                 // Check if data matrix (Eigen::MatrixXd) is empty
                 // throws an exception if data matrix is empty
-                void __isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const;
+                void isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const;
 
                 // Check if input data and expected data have the same amount of rows
                 // Check if there is a pair for each input data tensor in expected data and vice versa
-                void __checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const;
+                void checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const;
 
                 // Check if the input Matrix has the same amount of columns as the number of rows in layer data
-                void __checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const;
+                void checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const;
 
                 // Initialize all layers coefficients
-                void __initializeLayers();
+                void initializeLayers();
 
                 // Forward pass
-                void __forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx);
+                void forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx);
 
                 // Back propagation
-                void __backPropagation(const Eigen::MatrixXd& expData);
+                void backPropagation(const Eigen::MatrixXd& expData);
 
                 // Calculate loss
                 // Return values: tuple[0] = loss, tuple[1] = metrics
-                std::tuple<Eigen::VectorXd, double> __calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
+                std::tuple<Eigen::VectorXd, double> calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
 
         };
     }

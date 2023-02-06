@@ -50,12 +50,8 @@ namespace NNFramework
                     ModelConfiguration(ModelConfiguration& m) = delete;
 
                     // Move constructor
-                    ModelConfiguration(ModelConfiguration&& m)
-                    {
-                        mLossPtr = std::move(m.mLossPtr);
-                        mMetricsPtr = std::move(m.mMetricsPtr);
-                        mOptimizerPtr = std::move(m.mOptimizerPtr);
-                    }
+                    ModelConfiguration(ModelConfiguration&& m) : mLossPtr(std::move(m.mLossPtr)), mMetricsPtr(std::move(m.mMetricsPtr)), mOptimizerPtr(std::move(m.mOptimizerPtr))
+                    { }
                     
                     // Delete copy assignment operator
                     ModelConfiguration& operator=(const ModelConfiguration& d) = delete;

@@ -26,6 +26,21 @@ namespace NNFramework
             }   
         }
 
+        // Compile model with added layers, optimizer, loss function and metrics 
+        bool Model::compileModel(ModelConfiguration::ModelConfiguration& modelConfig)
+        {
+            // bind model configuration to the neural network model
+            mModelConfig = std::make_unique<ModelConfiguration::ModelConfiguration>(std::move(modelConfig));
+            
+            // initialize all layers coefficients
+            initializeLayers();
+
+            // set model compiled 
+            mIsCompiled = true;
+
+            return this->mIsCompiled;
+        }
+
         // Save model weights to desired location
         bool Model::saveModel(std::string modelPath) const
         {
@@ -54,19 +69,19 @@ namespace NNFramework
         void Model::modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs)
         {
             // check if model is compiled
-            __checkIsModelCompiled(__FUNCTION__);
+            checkIsModelCompiled(__FUNCTION__);
 
             // check if input data and expected data are empty
-            __isDataEmpty(__FUNCTION__, inputData);
-            __isDataEmpty(__FUNCTION__, expectedData);
+            isDataEmpty(__FUNCTION__, inputData);
+            isDataEmpty(__FUNCTION__, expectedData);
 
             // check if input data and expected data have same number of rows
-            __checkInExpRowDim(__FUNCTION__, inputData, expectedData);
+            checkInExpRowDim(__FUNCTION__, inputData, expectedData);
 
             // check if input data has the same number of columns as number of rows in input layer of NN
             // check if expectedData has the same number of columns as number of rows in output layer of NN
-            __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
-            __checkRowColDim(__FUNCTION__, expectedData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
+            checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
+            checkRowColDim(__FUNCTION__, expectedData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
 
             // Split data to training data - validation data
 
@@ -81,21 +96,20 @@ namespace NNFramework
                 for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
                 {
                     // forward pass trough NNetwork
-                    __forwardPass(inputData, rowIdx);
+                    forwardPass(inputData, rowIdx);
                     
                     // calculate losses and metrics
-                    auto [l, m] = __calculateLossAndMetrics(expectedData, rowIdx);
+                    auto [l, m] = calculateLossAndMetrics(expectedData, rowIdx);
                     loss += l;
                     metrics = m;
                     //std::cout << "Epoch: " << ep << " -> Loss: " << loss << " Accuracy: " << metrics << "\r";
                     //std::cout.flush();  
 
                     // backpropagation trough the NNetwork
-                    __backPropagation(expectedData.row(rowIdx));
+                    backPropagation(expectedData.row(rowIdx));
 
                     // update layer coefficients
 
-                
                 }
 
                 // save loss and metrics of each epoh
@@ -115,13 +129,13 @@ namespace NNFramework
         Eigen::MatrixXd Model::modelPredict(Eigen::MatrixXd& inputData)
         {
             // check if model is compiled
-            __checkIsModelCompiled(__FUNCTION__);
+            checkIsModelCompiled(__FUNCTION__);
 
             // check if input data is empty
-            __isDataEmpty(__FUNCTION__, inputData);
+            isDataEmpty(__FUNCTION__, inputData);
 
             // check if input data has the same number of columns as number of rows in input layer of NN
-            __checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
+            checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
 
             // start predicting
             uint32_t outputLayerRows = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()->rows();
@@ -131,7 +145,7 @@ namespace NNFramework
             for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
             {
                 // forward pass trough NNetwork
-                __forwardPass(inputData, rowIdx);
+                forwardPass(inputData, rowIdx);
 
                 // save outputs
                 std::shared_ptr<Eigen::MatrixXd> outputLayerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
@@ -147,7 +161,7 @@ namespace NNFramework
         void Model::modelSummary() const
         {
             // check if model is compiled
-            __checkIsModelCompiled(__FUNCTION__);
+            checkIsModelCompiled(__FUNCTION__);
 
             std::cout << "**************************************" << std::endl;
             std::cout << "Model summary: " << std::endl;
@@ -173,7 +187,7 @@ namespace NNFramework
         }
 
         // Check if model is compiled
-        void Model::__checkIsModelCompiled(std::string fName) const
+        void Model::checkIsModelCompiled(std::string fName) const
         {
             if(false == mIsCompiled)
             {
@@ -184,7 +198,7 @@ namespace NNFramework
 
         // Check if data matrix (Eigen::MatrixXd) is empty
         // throws an exception if data matrix is empty
-        void Model::__isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const
+        void Model::isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const
         {
             if(NNFRAMEWORK_ZERO == data.size())
             {
@@ -195,7 +209,7 @@ namespace NNFramework
 
         // Check if input data and expected data have the same amount of rows
         // Check if there is a pair for each input data tensor in expected data and vice versa
-        void Model::__checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const
+        void Model::checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const
         {
             if(inData.rows() != expData.rows())
             {
@@ -206,7 +220,7 @@ namespace NNFramework
         }
 
         // Check if the input Matrix has the same amount of columns as the number of rows in layer data
-        void Model::__checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const
+        void Model::checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const
         {
             if(inData.cols() != layerData.rows())
             {
@@ -216,7 +230,7 @@ namespace NNFramework
         }
 
         // Initialize all layers coefficients
-        void Model::__initializeLayers()
+        void Model::initializeLayers()
         {
             // iterate trough layers
             for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
@@ -265,7 +279,7 @@ namespace NNFramework
         }
 
         // Forward pass
-        void Model::__forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx)
+        void Model::forwardPass(const Eigen::MatrixXd& inputData, const uint32_t rowIdx)
         {
             // set input layer data
             std::shared_ptr<Eigen::MatrixXd> inputLayerZ = mLayers[INPUT_LAYER_IDX]->get_mLayerZ();
@@ -300,7 +314,7 @@ namespace NNFramework
         }
 
         // Back propagation
-        void Model::__backPropagation(const Eigen::MatrixXd& expData)
+        void Model::backPropagation(const Eigen::MatrixXd& expData)
         {
             // calculate gradients of the output layer
             std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated();
@@ -329,7 +343,7 @@ namespace NNFramework
 
             // calculate gradients of the rest of the layers
             // skip first and last layer
-            for (uint32_t i = (mLayersNo - 2); i > 0; --i)
+            for (uint32_t i = (mLayersNo - 2); i > NNFRAMEWORK_ZERO; --i)
             {
                 std::shared_ptr<Eigen::MatrixXd> nextLayerWeights = mLayers[NEXT_LAYER_IDX(i)]->get_mLayerWeights();
                 layerZActivated = mLayers[i]->get_mLayerZActivated();
@@ -357,7 +371,7 @@ namespace NNFramework
         }
 
         // Return values: tuple[0] = loss, tuple[1] = metrics
-        std::tuple<Eigen::VectorXd, double> Model::__calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
+        std::tuple<Eigen::VectorXd, double> Model::calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
         {
             Eigen::MatrixXd outputLayerZActivated = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated());
             Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZActivated.data(), outputLayerZActivated.cols() * outputLayerZActivated.rows()));

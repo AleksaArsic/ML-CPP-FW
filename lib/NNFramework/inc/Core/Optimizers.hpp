@@ -21,7 +21,7 @@ namespace NNFramework
                 return "GradientDescent";
             }
 
-            virtual double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 return 0.0;
             }
@@ -34,7 +34,7 @@ namespace NNFramework
                 return "StohasticGradientDescent";
             }
 
-            virtual double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
+            double operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const override
             {
                 return 0.0;
             }
