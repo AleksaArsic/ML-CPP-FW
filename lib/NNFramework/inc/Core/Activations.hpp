@@ -16,7 +16,7 @@ namespace NNFramework
         {
             virtual std::string name() const = 0;
             
-            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const bool derive = false) const
+            Eigen::MatrixXd operator()(const Eigen::MatrixXd& x, const bool derive = false) const
             {
                 if(derive)
                 {
@@ -28,8 +28,8 @@ namespace NNFramework
                 }
             }
             
-            virtual Eigen::VectorXd activate(const Eigen::VectorXd& x) const = 0;
-            virtual Eigen::VectorXd derivative(const Eigen::VectorXd& x) const = 0;
+            virtual Eigen::MatrixXd activate(const Eigen::MatrixXd& x) const = 0;
+            virtual Eigen::MatrixXd derivative(const Eigen::MatrixXd& x) const = 0;
         };
 
         struct InputActivation final : ActivationFunctor 
@@ -39,14 +39,14 @@ namespace NNFramework
                 return "InputActivation";
             }
 
-            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd activate(const Eigen::MatrixXd& x) const override 
             { 
                 return x;
             }
 
-            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x) const override 
             {
-                Eigen::VectorXd retVec = Eigen::VectorXd::Zero(x.size());
+                Eigen::MatrixXd retVec = Eigen::MatrixXd::Zero(x.rows(), x.cols());
                 return retVec;
             }
         };
@@ -58,22 +58,22 @@ namespace NNFramework
                 return "Sigmoid";
             }
 
-            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd activate(const Eigen::MatrixXd& x) const override 
             { 
-                Eigen::VectorXd retVec = x;
+                Eigen::MatrixXd retVec = x;
                 
                 retVec *= -1.0;
                 retVec = retVec.unaryExpr([](const double& el) { return std::exp(el); });
 
-                retVec = retVec + Eigen::VectorXd::Ones(retVec.size());
+                retVec = retVec + Eigen::MatrixXd::Ones(retVec.rows(), retVec.cols());
 
                 return retVec.unaryExpr([](const double& el){ return 1.0 / el; });
             }
 
-            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x) const override 
             {
-                Eigen::VectorXd activated = activate(x);
-                return activated.cwiseProduct(Eigen::VectorXd::Ones(activated.size()) - activated);
+                Eigen::MatrixXd activated = activate(x);
+                return activated.cwiseProduct(Eigen::MatrixXd::Ones(activated.rows(), activated.cols()) - activated);
             }
         };
 
@@ -84,18 +84,18 @@ namespace NNFramework
                 return "Relu";
             }
 
-            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd activate(const Eigen::MatrixXd& x) const override 
             { 
-                Eigen::VectorXd retVec = x.unaryExpr([](const double& el){ return std::max(0.0, el); });
+                Eigen::MatrixXd retVec = x.unaryExpr([](const double& el){ return std::max(0.0, el); });
 
                 return retVec;
             }
 
-            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x) const override 
             {
                 std::string fname = __FUNCTION__;
 
-                Eigen::VectorXd retVec = x.unaryExpr(
+                Eigen::MatrixXd retVec = x.unaryExpr(
                     [fname](const double& el)
                     {
                         if(0.0 > el)
@@ -127,18 +127,18 @@ namespace NNFramework
                 return "LeakyRelu";
             }
 
-            Eigen::VectorXd activate(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd activate(const Eigen::MatrixXd& x) const override 
             { 
-                Eigen::VectorXd retVec = x.unaryExpr([this](const double& el) { return (el >= 0) ? el : factor * el; } );
+                Eigen::MatrixXd retVec = x.unaryExpr([this](const double& el) { return (el >= 0) ? el : factor * el; } );
 
                 return retVec;
             }
 
-            Eigen::VectorXd derivative(const Eigen::VectorXd& x) const override 
+            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x) const override 
             {
                 std::string fname = __FUNCTION__;
 
-                Eigen::VectorXd retVec = x.unaryExpr(
+                Eigen::MatrixXd retVec = x.unaryExpr(
                     [this, fname](const double& el)
                     {
                         if(0.0 < el)

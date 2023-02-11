@@ -17,7 +17,7 @@ namespace NNFramework
             
             // param: x -> expected
             // param: y -> predicted
-            Eigen::VectorXd operator()(const Eigen::VectorXd& x, const Eigen::VectorXd& y, const bool derive = false) const
+            Eigen::MatrixXd operator()(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y, const bool derive = false) const
             {
                 if(derive)
                 {
@@ -29,8 +29,8 @@ namespace NNFramework
                 }
             }
             
-            virtual Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
-            virtual Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const = 0;
+            virtual Eigen::MatrixXd loss(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const = 0;
+            virtual Eigen::MatrixXd derivative(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const = 0;
         };
 
         struct MeanSquaredError final : LossFunctor
@@ -42,17 +42,17 @@ namespace NNFramework
 
             // param: x -> expected
             // param: y -> predicted  
-            Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            Eigen::MatrixXd loss(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const
             {
-                Eigen::VectorXd diffSquared = x - y;
+                Eigen::MatrixXd diffSquared = x - y;
                 diffSquared = diffSquared.cwiseProduct(diffSquared);
 
                 return 0.5 *  diffSquared;
             }
 
-            Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const
             {
-                Eigen::VectorXd diff = y - x;
+                Eigen::MatrixXd diff = y - x;
 
                 return diff;
             }
@@ -67,22 +67,25 @@ namespace NNFramework
 
             // param: x -> expected
             // param: y -> predicted
-            Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            Eigen::MatrixXd loss(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const
             {
-                Eigen::VectorXd diffAbs = x - y;
+                Eigen::MatrixXd diffAbs = x - y;
                 diffAbs = diffAbs.cwiseAbs();
 
                 return diffAbs;
             }
 
             // derivative of MeanAbsoluteError is not defined in 0
-            Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const
             {
-                Eigen::VectorXd result(x.size());
+                Eigen::MatrixXd result(x.rows(), x.cols());
 
-                for(uint32_t i = 0; i < result.size(); ++i)
+                for(uint32_t i = 0; i < result.rows(); ++i)
                 {
-                    result[i] = (y[i] > x[i] ? 1.0 : (y[i] < x[i] ? -1.0 : NAN));
+                    for(uint32_t j = 0; j < result.cols(); ++j)
+                    {
+                        result(i, j) = (y(i, j) > x(i, j) ? 1.0 : (y(i, j) < x(i, j) ? -1.0 : NAN));
+                    }
                 }
 
                 return result;
@@ -99,23 +102,26 @@ namespace NNFramework
             // param: x -> expected
             // param: y -> predicted
             // BCELoss =  −(x * log(y) + (1−x) * log(1−y))
-            Eigen::VectorXd loss(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            Eigen::MatrixXd loss(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const
             {
-                Eigen::VectorXd predLogFirst = y.array().log10().matrix();
-                Eigen::VectorXd predLogSecond = ((Eigen::VectorXd::Ones(y.size()) - y).array().log10()).matrix();
-                Eigen::VectorXd expectedDiff = (Eigen::VectorXd::Ones(x.size()) - x);
+                Eigen::MatrixXd predLogFirst = y.array().log10().matrix();
+                Eigen::MatrixXd predLogSecond = ((Eigen::MatrixXd::Ones(y.rows(), y.cols()) - y).array().log10()).matrix();
+                Eigen::MatrixXd expectedDiff = (Eigen::MatrixXd::Ones(x.rows(), x.cols()) - x);
 
-                Eigen::VectorXd retLoss = -1 * (x.cwiseProduct(predLogFirst) + expectedDiff.cwiseProduct(predLogSecond));
+                Eigen::MatrixXd retLoss = -1 * (x.cwiseProduct(predLogFirst) + expectedDiff.cwiseProduct(predLogSecond));
 
                 return retLoss;
             }
-            Eigen::VectorXd derivative(const Eigen::VectorXd& x, const Eigen::VectorXd& y) const
+            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const
             {
-                Eigen::VectorXd result(x.size());
+                Eigen::MatrixXd result(x.rows(), x.cols());
 
-                for(uint32_t i = 0; i < result.size(); ++i)
+                for(uint32_t i = 0; i < result.rows(); ++i)
                 {
-                    result[i] = (y[i] - x[i]) / (y[i] * (1 - y[i]));
+                    for(uint32_t j = 0; j < result.cols(); ++j)
+                    {
+                        result(i, j) = (y(i, j) - x(i, j)) / (y(i, j) * (1 - y(i, j)));
+                    }
                 }
 
                 return result;
