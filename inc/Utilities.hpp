@@ -99,22 +99,3 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> loadData(const std::string path, ui
     }
 }
 
-Eigen::MatrixXd& normalizeData(Eigen::MatrixXd& data)
-{
-    double min = data.minCoeff();
-    double max = data.maxCoeff();
-
-    data = data.unaryExpr([min, max](double x){ return (x - min) / (max - min); });
-
-    return data;
-}
-
-Eigen::MatrixXd& denormalizeData(Eigen::MatrixXd& data)
-{
-    double min = data.minCoeff();
-    double max = data.maxCoeff();
-
-    data = data.unaryExpr([min, max](double x){ return (x * (max - min) + min); });
-
-    return data;
-}

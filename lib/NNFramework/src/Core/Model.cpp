@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <random>
 #include <limits>
 
 namespace NNFramework
@@ -71,7 +70,7 @@ namespace NNFramework
         }
 
         // Train compiled model
-        void Model::modelFit(const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData, const uint32_t epochs)
+        void Model::modelFit(const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData, const uint16_t epochs)
         {
             // check if model is compiled
             checkIsModelCompiled(__FUNCTION__);
@@ -88,28 +87,26 @@ namespace NNFramework
             checkRowColDim(__FUNCTION__, inData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
             checkRowColDim(__FUNCTION__, expData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
 
-            // construct new matrices for data shuffle between epochs
+            // Configure the rest of the model in "train-time"
+
+            // Data handler reference used for shuffling the data
+            std::unique_ptr<DataHandler::DataHandler>& mDataHandlerRef = DataHandler::DataHandler::getInstance(); 
+
+            // construct new matrices for data shuffle between epoch
+            // more memory consumption, less error prone (moral dilema?)
             Eigen::MatrixXd inputData = inData;
             Eigen::MatrixXd expectedData = expData;
 
             // For provided number of epochs train the model
             for (uint32_t ep = 0; ep < epochs; ++ep)
             {
-                if (ep % 10 == 0)
+                // shuffle training data for better problem generalization
+                if (true == (mModelConfigPtr->mShuffleData->mShuffleOnFit))
                 {
-                    // randomize training data for better problem generalization
-                    std::random_device r;
-                    std::seed_seq rng_seed{r(), r(), r(), r(), r(), r(), r(), r()};
-
-                    //create random engines with the rng seed
-                    std::mt19937 eng1(rng_seed);
-
-                    //create permutation Matrix with the size of the rows
-                    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permX(inputData.rows());
-                    permX.setIdentity();
-                    std::shuffle(permX.indices().data(), permX.indices().data()+permX.indices().size(), eng1);
-                    inputData = permX * inputData;   //shuffle row wise
-                    expectedData = permX * expectedData; // shuffle row wise
+                    if (NNFRAMEWORK_ZERO == (ep % mModelConfigPtr->mShuffleData->mShuffleStep))
+                    {
+                        mDataHandlerRef->shuffleData(inputData, expectedData);
+                    }
                 }
 
                 // loss and metrics
@@ -126,13 +123,15 @@ namespace NNFramework
                     auto [l, m] = calculateLossAndMetrics(expectedData, rowIdx);
                     loss += l;
                     metrics += m;
-                    std::cout << "Epoch: " << ep + 1 << " -> Loss: " << loss.sum() / inputData.rows() << " Accuracy: " << metrics / inputData.rows() << "\r";
+
+                    // Log epoch status
+                    std::cout << "Epoch: " << (ep + 1) << " -> Loss: " << (loss.sum() / inputData.rows()) << " Accuracy: " << (metrics / inputData.rows()) << "\r";
                     std::cout.flush();  
 
                     // backpropagation trough the NNetwork
                     backPropagation(expectedData.row(rowIdx));
 
-                    // update layer coefficients
+                    // update layer coefficients based on backpropagation gradient calculation
                     ((*mModelConfigPtr->mOptimizerPtr))(mLayers);
                 }
                 std::cout << std::endl;

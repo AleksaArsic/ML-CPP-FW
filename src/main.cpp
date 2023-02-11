@@ -8,23 +8,15 @@ using namespace NNFramework;
 
 int main()
 {
-
-    std::unique_ptr<NNFramework::DataHandler::DataHandler>& dHandleRef = NNFramework::DataHandler::DataHandler::getInstance();
-    std::cout << &dHandleRef << std::endl;
-    dHandleRef->method();
-
-    std::unique_ptr<NNFramework::DataHandler::DataHandler>& dHandleRef2 = NNFramework::DataHandler::DataHandler::getInstance();
-    std::cout << &dHandleRef2 << std::endl;
-    dHandleRef->method();
-
-#if 1
     Model::Model model;
 
     Model::ModelConfiguration::ModelConfiguration modelConfig { Loss::LossType<Loss::MeanSquaredError>(), 
                                                                 Metrics::MetricsType<Metrics::MeanSquaredError>(), 
-                                                                Optimizers::OptimizersType<Optimizers::GradientDescent>() };
+                                                                Optimizers::OptimizersType<Optimizers::GradientDescent>(),
+                                                                Model::ModelConfiguration::ShuffleData { true, 5 } };
 
     modelConfig.mOptimizerPtr->learningRate = 0.1;
+    modelConfig.mShuffleData->mShuffleStep = 10;
 
     model.addLayer(Layers::Dense(1)); // or -> model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::InputActivation>()));
     model.addLayer(Layers::Dense(20, Activations::ActivationType<Activations::LeakyRelu>()));
@@ -38,13 +30,16 @@ int main()
     Eigen::MatrixXd inData = std::get<0>(loadedData);
     Eigen::MatrixXd labelsData = std::get<1>(loadedData);
 
-    Eigen::MatrixXd inDataNormalized = normalizeData(inData); 
-    Eigen::MatrixXd outDataNormalized = normalizeData(labelsData);
+    std::unique_ptr<NNFramework::DataHandler::DataHandler>& dHandleRef = NNFramework::DataHandler::DataHandler::getInstance();
+
+    Eigen::MatrixXd inDataNormalized = dHandleRef->normalizeData(inData); 
+    Eigen::MatrixXd outDataNormalized = dHandleRef->normalizeData(labelsData);
 
     model.modelFit(inDataNormalized, outDataNormalized, 50);
 
     Eigen::MatrixXd predictedData = model.modelPredict(inDataNormalized);
-    predictedData = denormalizeData(predictedData);
+
+    predictedData = dHandleRef->denormalizeData(predictedData, labelsData.minCoeff(), labelsData.maxCoeff());
 
     //sort data based on xi values for the purposes of graph plotting 
     std::tuple sortedPredData = sortData(inData, predictedData);
@@ -54,7 +49,6 @@ int main()
 
     // can't export graphs???
     plotData(plotTuple);
-    //plotData();
-#endif
+
     return 0;
 }

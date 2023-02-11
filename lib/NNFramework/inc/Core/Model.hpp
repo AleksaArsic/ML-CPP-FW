@@ -9,6 +9,7 @@
 #include "Activations.hpp"
 #include "ModelConfiguration.hpp"
 #include "WeightInitializer.hpp"
+#include "../Utilities/DataHandler.hpp"
 #include "../Common/Common.hpp"
 
 namespace NNFramework
@@ -52,7 +53,7 @@ namespace NNFramework
                 // ...
                 // n)   [yn1, yn2, ..., ynm]
                 //         
-                void modelFit(const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData, const uint32_t epochs);
+                void modelFit(const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData, const uint16_t epochs);
 
                 // Trained model predict on provided input data
                 // Expected inputData format:
