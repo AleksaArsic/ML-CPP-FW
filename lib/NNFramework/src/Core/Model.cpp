@@ -2,6 +2,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <random>
+#include <limits>
 
 namespace NNFramework
 {
@@ -66,34 +68,55 @@ namespace NNFramework
         }
 
         // Train compiled model
-        void Model::modelFit(Eigen::MatrixXd& inputData, Eigen::MatrixXd& expectedData, const uint32_t epochs)
+        void Model::modelFit(const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData, const uint32_t epochs)
         {
             // check if model is compiled
             checkIsModelCompiled(__FUNCTION__);
 
             // check if input data and expected data are empty
-            isDataEmpty(__FUNCTION__, inputData);
-            isDataEmpty(__FUNCTION__, expectedData);
+            isDataEmpty(__FUNCTION__, inData);
+            isDataEmpty(__FUNCTION__, expData);
 
             // check if input data and expected data have same number of rows
-            checkInExpRowDim(__FUNCTION__, inputData, expectedData);
+            checkInExpRowDim(__FUNCTION__, inData, expData);
 
             // check if input data has the same number of columns as number of rows in input layer of NN
             // check if expectedData has the same number of columns as number of rows in output layer of NN
-            checkRowColDim(__FUNCTION__, inputData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
-            checkRowColDim(__FUNCTION__, expectedData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
+            checkRowColDim(__FUNCTION__, inData, *(mLayers[INPUT_LAYER_IDX]->get_mLayerZActivated()));
+            checkRowColDim(__FUNCTION__, expData, *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated()));
 
             // Split data to training data - validation data
+
+            // construct new matrices for data shuffle between epochs
+            Eigen::MatrixXd inputData = inData;
+            Eigen::MatrixXd expectedData = expData;
 
             // For provided number of epochs train the model
             for (uint32_t ep = 0; ep < epochs; ++ep)
             {
-                // loss and metrics
-                Eigen::VectorXd loss(expectedData.cols());
-                double metrics;
+                if (ep % 10 == 0)
+                {
+                    // randomize training data for better problem generalization
+                    std::random_device r;
+                    std::seed_seq rng_seed{r(), r(), r(), r(), r(), r(), r(), r()};
 
+                    //create random engines with the rng seed
+                    std::mt19937 eng1(rng_seed);
+
+                    //create permutation Matrix with the size of the rows
+                    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> permX(inputData.rows());
+                    permX.setIdentity();
+                    std::shuffle(permX.indices().data(), permX.indices().data()+permX.indices().size(), eng1);
+                    inputData = permX * inputData;   //shuffle row wise
+                    expectedData = permX * expectedData; // shuffle row wise
+                }
+
+                // loss and metrics
+                Eigen::VectorXd loss = Eigen::VectorXd::Zero(expectedData.cols());
+                double metrics;
+                
                 // for each data row in inputData
-                for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
+                for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); ++rowIdx)
                 {
                     // forward pass trough NNetwork
                     forwardPass(inputData, rowIdx);
@@ -111,18 +134,14 @@ namespace NNFramework
                     // update layer coefficients
                     ((*mModelConfig->mOptimizerPtr))(mLayers);
                 }
-
+                std::cout << "Loss Sum: " << loss.sum() << std::endl << std::endl;
                 // save loss and metrics of each epoh
                 mHistory.hLoss.resize(ep + 1);
                 mHistory.hLoss[ep] = loss.sum() / inputData.rows();
 
                 mHistory.hAccuracy.resize(ep + 1);
                 mHistory.hAccuracy[ep] = metrics;
-
-                // if the result of current epoch is better than overall best training result
-                // save relevant model coefficients
             }
-
         }
 
         // Trained model predict on provided input data
@@ -142,7 +161,7 @@ namespace NNFramework
             Eigen::MatrixXd predictedData(inputData.rows(), outputLayerRows);
             
             // for each data row in inputData
-            for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); rowIdx++)
+            for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); ++rowIdx)
             {
                 // forward pass trough NNetwork
                 forwardPass(inputData, rowIdx);
@@ -232,6 +251,11 @@ namespace NNFramework
         // Initialize all layers coefficients
         void Model::initializeLayers()
         {
+            // Initialization distributions
+            std::default_random_engine generator;
+            std::normal_distribution<double> n_distribution(0.0, 10.0);
+            std::uniform_real_distribution<double> u_distribution(0.0, 10.0);
+
             // iterate trough layers
             for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
             {
@@ -255,17 +279,37 @@ namespace NNFramework
                 // gradients of Bias matrix has the same dimensions as the Bias matrix
                 *layerBGradients = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
 
+                // Layer weights matrix construction
+                *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
+
                 if(INPUT_LAYER_IDX == layerId)
                 {
                     // Input layer does not contain Weights, Biases nor Activation
-                    *layerWeights = Eigen::MatrixXd::Zero(perceptronNo, prevPercNo);
                     *layerBias = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
 
                     (*it)->set_mLearnableCoeffs(NNFRAMEWORK_ZERO);
                 }
                 else
                 {
-                    *layerWeights = Eigen::MatrixXd::Random(perceptronNo, prevPercNo);
+                    if((*it)->mActivationPtr->name() == "Sigmoid")
+                    {
+                        // Xavier Glorot initialization
+                        // W^i ~ N(0, sqrt(2 / (n^i + n^i+1)))
+                        // change parameter of Xavier Glorot initialization
+                        std::uniform_real_distribution<double>::param_type distParam(-1 * std::sqrt(2.0) / std::sqrt((prevPercNo + perceptronNo)), std::sqrt(2.0) / std::sqrt((prevPercNo + perceptronNo)));
+                        u_distribution.param(distParam);
+                        *layerWeights = (*layerWeights).unaryExpr([&u_distribution, &generator](double x){ return u_distribution(generator); });
+                    }
+                    else
+                    {
+                        // change parameter of Kaiming He initialization
+                        std::normal_distribution<double>::param_type distParam(0.0, std::sqrt(2.0 / prevPercNo));
+                        n_distribution.param(distParam);                       
+                        *layerWeights = (*layerWeights).unaryExpr([&n_distribution, &generator](double x){ return n_distribution(generator); });
+                    }
+                        
+
+                    std::cout << (*layerWeights) << std::endl;
                     *layerBias = Eigen::MatrixXd::Ones(perceptronNo, MATRIX_COL_INIT_VAL);
 
                     // calculate learnable coefficients
@@ -290,7 +334,7 @@ namespace NNFramework
             
             // passtrough input values as activated
             // x = f(x)
-            (*inputLayerZActivated) = (*inputLayerZ);     
+            (*inputLayerZActivated) = (*inputLayerZ);    
 
             // iterate trough layers 
             // skip first layer, as first (input) layer does not have weights nor activations
@@ -324,10 +368,13 @@ namespace NNFramework
 
             // calculate derivative of the loss based on the output activation
             Eigen::VectorXd lossDerivative = ((*mModelConfig->mLossPtr))(expData.transpose(), *layerZActivated, true);
+
             // calculate derivative of the activated values of output layer
             Eigen::VectorXd layerZActivationDer = (*(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->mActivationPtr))(*layerZActivated);
-            // calculate elementwise product dL/dY * dA / dZ
+
+            // calculate elementwise product dL/dY * dA / dZ, which is equal to dL/dB
             lossDerivative = lossDerivative.cwiseProduct(layerZActivationDer);
+
             // calculate overall gradient of the output layer
             // dL/dW = dL/dY * dY/dZ * dZ/dW
             // .rowwise() assignment will boradcast prevLayerZActivated column vector 

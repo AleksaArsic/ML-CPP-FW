@@ -6,19 +6,21 @@
 #include "matplot/matplot.h"
 #include "NNFramework/NNFramework"
 
-//void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd> data, std::string savePath = "img/graph")
-void plotData()
+void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> data, std::string savePath = "img/graph")
+//void plotData()
 {
     using namespace matplot;
     auto f = figure(true);
 
-    //plot(std::get<0>(data), std::get<1>(data));
+    plot(std::get<0>(data), std::get<1>(data));
+    hold(on);
+    plot(std::get<0>(data), std::get<2>(data));
 
-    plot({0, 1, 2, 3}, {0, 1, 2, 3});
+    //plot({0, 1, 2, 3}, {0, 1, 2, 3});
 
     std::string filename = "./test.pdf";
-    save(filename); // currently is not supported by the matplot++ library
-    //show();               // use show instead
+    //save(filename); // currently is not supported by the matplot++ library
+    show();               // use show instead
 }
 
 // used for sorting pairs of (xi, yi)
@@ -84,7 +86,7 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> loadData(const std::string path, ui
                     s >> expData(i, j - inCol);
                 }
             }
-            i++;
+            ++i;
         }
 
         inputFile.close(); // close the file object.
@@ -95,4 +97,24 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> loadData(const std::string path, ui
     {
         throw "Input file is not opened.";
     }
+}
+
+Eigen::MatrixXd normalizeData(Eigen::MatrixXd inData)
+{
+    double min = inData.minCoeff();
+    double max = inData.maxCoeff();
+
+    inData = inData.unaryExpr([min, max](double x){ return (x - min) / (max - min); });
+
+    return inData;
+}
+
+Eigen::MatrixXd denormalizeData(Eigen::MatrixXd inData)
+{
+    double min = inData.minCoeff();
+    double max = inData.maxCoeff();
+
+    inData = inData.unaryExpr([min, max](double x){ return (x * (max - min) + min); });
+
+    return inData;
 }
