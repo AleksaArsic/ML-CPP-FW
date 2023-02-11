@@ -8,6 +8,16 @@ using namespace NNFramework;
 
 int main()
 {
+
+    std::unique_ptr<NNFramework::DataHandler::DataHandler>& dHandleRef = NNFramework::DataHandler::DataHandler::getInstance();
+    std::cout << &dHandleRef << std::endl;
+    dHandleRef->method();
+
+    std::unique_ptr<NNFramework::DataHandler::DataHandler>& dHandleRef2 = NNFramework::DataHandler::DataHandler::getInstance();
+    std::cout << &dHandleRef2 << std::endl;
+    dHandleRef->method();
+
+#if 1
     Model::Model model;
 
     Model::ModelConfiguration::ModelConfiguration modelConfig { Loss::LossType<Loss::MeanSquaredError>(), 
@@ -45,6 +55,6 @@ int main()
     // can't export graphs???
     plotData(plotTuple);
     //plotData();
-
+#endif
     return 0;
 }

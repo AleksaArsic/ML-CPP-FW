@@ -8,6 +8,7 @@
 #include "Layers.hpp"
 #include "Activations.hpp"
 #include "ModelConfiguration.hpp"
+#include "WeightInitializer.hpp"
 #include "../Common/Common.hpp"
 
 namespace NNFramework
@@ -93,7 +94,8 @@ namespace NNFramework
 
                 ModelHistory mHistory;
 
-                std::unique_ptr<ModelConfiguration::ModelConfiguration> mModelConfig;
+                std::unique_ptr<ModelConfiguration::ModelConfiguration> mModelConfigPtr; // Model configuration container
+                std::unique_ptr<WeightInitializer::WeightInitializer> mWeightInitializerPtr; // Layer weights initializer based on the activation function of the layer
 
                 std::vector<std::unique_ptr<Layers::Layer>> mLayers; // Number of Layers is not known in advance thus, std::vector is more suitable for storing Layers
                 uint32_t mLearnableCoeffs;

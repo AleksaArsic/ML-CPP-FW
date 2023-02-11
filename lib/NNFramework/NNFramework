@@ -1,6 +1,9 @@
 #ifndef NNFRAMEWORK_HPP
 #define NNFRAMEWORK_HPP
 
+// Include Eigen as a linear algebra backend of NNFramework
+#include "inc/Eigen/Dense"
+
 // Include NNFramework Core modules
 #include "inc/Core/Model.hpp"
 #include "inc/Core/Layers.hpp"
@@ -9,7 +12,7 @@
 #include "inc/Core/Metrics.hpp"
 #include "inc/Core/Optimizers.hpp"
 
-// Include Eigen as a linear algebra backend of NNFramework
-#include "inc/Eigen/Dense"
+// Include NNFramework Utilities modules
+#include "inc/Utilities/DataHandler.hpp"
 
 #endif

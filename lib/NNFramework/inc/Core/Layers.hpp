@@ -21,16 +21,19 @@ namespace NNFramework
                 // Activation function unique_ptr
                 std::unique_ptr<Activations::ActivationFunctor> mActivationPtr;
 
+                // Delete default constructor
                 Layer() = delete;
+                // Delete copy constructor
                 Layer(Layer& l) = delete;
 
+                // Define move constructor
                 Layer(Layer&& l);
 
                 // Delete copy assignment operator
                 Layer& operator=(const Layer& l) = delete;
 
                 // Delete move assignment operator
-                Layer& operator=(const Layer&& l) = delete;
+                Layer& operator=(Layer&& l) = delete;
 
                 // Getters
                 uint8_t get_mPerceptronNo() const noexcept { return this->mPerceptronNo; }
