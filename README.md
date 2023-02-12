@@ -222,36 +222,36 @@ As a result we are geting Eigen::MatrixXd of predicted data.
 ## 10. List of supported Layer and Model Configuration parameters
 
 The following configuration parameters are currently supported by Neural Network Framework:
-* **Activations and activation derivatives**
+* [**Activations and activation derivatives**](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Activations.hpp)
     * InputActivation (Pass trough)
     * Sigmoid
     * Relu
     * LeakyRelu
-* **Losses and loss derivatives**
+* [**Losses and loss derivatives**](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Loss.hpp)
     * MeanSquaredError
     * MeanAbsoluteError
     * BinaryCrossEntropy
-* **Metrics**
+* [**Metrics**](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Metrics.hpp)
     * ClassificationAccuracy
     * MeanSquaredError
     * MeanAbsoluteError
-* **Optimizers**
+* [**Optimizers**](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Optimizers.hpp)
     * GradientDescent
 
 <a name="headerdesc"></a>
 ## 10. Headers description
 As mentioned earlier, root of the NNFramework is located under ./lib/NNFramework. For the user to have a little more knowledge of the framework in the following section brief descriptions of each header file in respect to NNFramework root are provided:
-* ./NNFramework - header file whose purpose is to enable easy inclusion of the NNFramework into the end user project
-* ./inc/Common/Common.hpp - header file with common code used by NNFramework
-* ./inc/Core/Activations.hpp - holds activation functors and their derivations
-* ./inc/Core/Layers.hpp - holds Layer classes
-* ./inc/Core/Loss.hpp - holds loss functors and their derivations
-* ./inc/Core/Metrics.hpp - holds metric functors
-* ./inc/Core/Model.hpp - holds Model class definition
-* ./inc/Core/ModelConfiguration - holds MoldeConfiguration class used for defining Model configuration parameters
-* ./inc/Core/Optimizers.hpp - holds optimizer functors
-* ./inc/Core/WeightInitializer.hpp - holds WeightInitializer class used for initialization of the Layer weights at the Model.compile() time
-* ./inc/Eigen/* - holds linear algebra "backend" library of the NNFramework
-* ./inc/Utilities/DataHandler.hpp - holds DataHandler class that is used for data manipulation (normalization, denormalization, data shuffle) 
+* [./NNFramework](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/NNFramework) - header file whose purpose is to enable easy inclusion of the NNFramework into the end user project
+* [./inc/Common/Common.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Common/Common.hpp) - header file with common code used by NNFramework
+* [./inc/Core/Activations.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Activations.hpp) - holds activation functors and their derivations
+* [./inc/Core/Layers.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Layers.hpp) - holds Layer classes
+* [./inc/Core/Loss.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Loss.hpp) - holds loss functors and their derivations
+* [./inc/Core/Metrics.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Metrics.hpp) - holds metric functors
+* [./inc/Core/Model.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Model.hpp) - holds Model class definition
+* [./inc/Core/ModelConfiguration](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/ModelConfiguration.hpp) - holds MoldeConfiguration class used for defining Model configuration parameters
+* [./inc/Core/Optimizers.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/Optimizers.hpp) - holds optimizer functors
+* [./inc/Core/WeightInitializer.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Core/WeightInitializer.hpp) - holds WeightInitializer class used for initialization of the Layer weights at the Model.compile() time
+* [./inc/Eigen/*](https://github.com/AleksaArsic/ML-CPP-FW/tree/main/lib/NNFramework/inc/Eigen) - holds linear algebra "backend" library of the NNFramework
+* [./inc/Utilities/DataHandler.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Utilities/DataHandler.hpp) - holds DataHandler class that is used for data manipulation (normalization, denormalization, data shuffle) 
 
 Each of the header file serves as an entry point for potential development and is structured in a way that is development friendly for future implementations and extensions of NNFramework.
