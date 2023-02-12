@@ -125,7 +125,7 @@ namespace NNFramework
                     metrics += m;
 
                     // Log epoch status
-                    std::cout << "Epoch: " << (ep + 1) << " -> Loss: " << (loss.sum() / inputData.rows()) << " Accuracy: " << (metrics / inputData.rows()) << "\r";
+                    std::cout << "Epoch: " << (ep + 1) << " -> Loss: " << (loss.sum() / inputData.rows()) << " Accuracy: " << (metrics) << "\r";
                     std::cout.flush();  
 
                     // backpropagation trough the NNetwork
@@ -314,7 +314,7 @@ namespace NNFramework
             (*inputLayerZ).transposeInPlace();
             
             // passtrough input values as activated
-            // x = f(x)
+            // f(x) = x
             (*inputLayerZActivated) = (*inputLayerZ);    
 
             // iterate trough layers 

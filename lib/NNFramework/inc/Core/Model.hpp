@@ -93,7 +93,7 @@ namespace NNFramework
                     Eigen::VectorXd hValAccuracy;
                 };
 
-                ModelHistory mHistory;
+                ModelHistory mHistory; // Model history container
 
                 std::unique_ptr<ModelConfiguration::ModelConfiguration> mModelConfigPtr; // Model configuration container
                 std::unique_ptr<WeightInitializer::WeightInitializer> mWeightInitializerPtr; // Layer weights initializer based on the activation function of the layer

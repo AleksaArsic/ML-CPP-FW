@@ -11,8 +11,8 @@ namespace NNFramework
 {
     namespace DataHandler
     {
-        // Class DataHandler does not store any kind of that 
-        // it is a simple interface for handling and manipulating with provided data
+        // Class DataHandler does not store any kind of data. 
+        // It is a simple interface for handling and manipulating with provided data
         // such as: Data normalization and denormalization, data shuffle, etc.
         // It is constructed as a Singleton Class as it is "container" for data manipulation methods.
         class DataHandler final

@@ -12,7 +12,7 @@ namespace NNFramework
         // The idea is to have base class that will consist of all common things for different layer types:
         // Dense, Convolutive, Flatten, ...
         // With this we achieve greater modularity of the code as we will have a possibility to simply
-        // inherit base functionality of the one layer.
+        // inherit base functionality of the Base Layer Class.
         // This also gives a possibility to the NN Model to have a pointer to the base class 
         // where layers of different types will be instantiated.
         class Layer

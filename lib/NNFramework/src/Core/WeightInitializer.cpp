@@ -7,9 +7,9 @@ namespace NNFramework
         namespace WeightInitializer
         {
             // Initialize weights based on the activation function
-            void WeightInitializer::initializeWeights(std::shared_ptr<Eigen::MatrixXd> weights, std::string activationName)
+            void WeightInitializer::initializeWeights(const std::shared_ptr<Eigen::MatrixXd>& weights, std::string activationName)
             {
-                // maybe use actual type instead of the name?
+                // maybe use actual type or enum class instead of the name?
                 if("Sigmoid" == activationName)
                 {
                     set_XavierGlorotParameters((*weights).cols(), (*weights).rows());
@@ -28,6 +28,7 @@ namespace NNFramework
                 std::uniform_real_distribution<double>::param_type distParam(-1 * std::sqrt(2.0) / std::sqrt((prevPercNo + perceptronNo)), std::sqrt(2.0) / std::sqrt((prevPercNo + perceptronNo)));
                 mUniformDistribution.param(distParam);
             }
+            
             // set uniform distribution parameters
             void WeightInitializer::set_KaimingHeParameters(double prevPercNo)
             {

@@ -28,7 +28,7 @@ namespace NNFramework
                     WeightInitializer& operator=(WeightInitializer&& wInitializer) = delete;
 
                     // Initialize weights based on the activation function
-                    void initializeWeights(std::shared_ptr<Eigen::MatrixXd> weights, std::string activationName);
+                    void initializeWeights(const std::shared_ptr<Eigen::MatrixXd>& weights, std::string activationName);
 
                 private:
                     // Initialization distributions
