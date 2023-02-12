@@ -125,7 +125,7 @@ Minimal version of cmake is: **3.15** with CXX_STANDARD 20
 <a name="cheatsheet"></a>
 ## 9. Example usecase
 
-Following chapters contain "cheatsheet" on how to use the Neural Network Framework and is representative complete workflow.  
+Following chapters contain "cheatsheet" on how to use the Neural Network Framework and is representing complete workflow.  
 Complete code snippet can be found in ./src/main.cpp
 
 ### Include NNFramework
