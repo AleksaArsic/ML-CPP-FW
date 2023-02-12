@@ -256,4 +256,4 @@ As mentioned earlier, root of the NNFramework is located under ./lib/NNFramework
 
 Each of the header file serves as an entry point for potential development and is structured in a way that is development friendly for future implementations and extensions of NNFramework.
 
-*For better description of each Class refere to source code.*
+*For better description of each Class refere to the source code.*
