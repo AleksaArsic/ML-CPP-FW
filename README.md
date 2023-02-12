@@ -255,3 +255,5 @@ As mentioned earlier, root of the NNFramework is located under ./lib/NNFramework
 * [./inc/Utilities/DataHandler.hpp](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/lib/NNFramework/inc/Utilities/DataHandler.hpp) - holds DataHandler class that is used for data manipulation (normalization, denormalization, data shuffle) 
 
 Each of the header file serves as an entry point for potential development and is structured in a way that is development friendly for future implementations and extensions of NNFramework.
+
+*For better description of each Class refere to source code.*
