@@ -10,7 +10,8 @@ Simple machine learning framework implemented using C++20 programming language.
 5. [ Prerequisites ](#prereq)
 6. [ Build the project ](#build)
 7. [ Run the project ](#run)
-8. [ Example usecase](#cheatsheet)
+8. [ Example usecase ](#cheatsheet)
+9. [ List of supported Layer and Model Configuration parameters ](#modelconfig)
 
 <a name="intro"></a>
 ## 2. Introduction
@@ -144,6 +145,8 @@ At this stage we added 3 layers to our neural network model with one input, one 
 * Hidden layer with 20 artificial neurons and LeakyRelu activation function
 * Output layer with one artificial neuron and Sigmoid activation function
 
+*For supported layers and Model configuration parameters refer to chapter 9.*
+
 ### Add Configuration of the Neural Network Model
 
 Loss, Metrics, Optimizer and additional configuration of the Model object is configured trough instance of Model::ModelConfiguration::ModelConfiguration object:
@@ -161,6 +164,8 @@ We can also change the values of the relevant configuration fields:
 modelConfig.mOptimizerPtr->learningRate = 0.1;
 modelConfig.mShuffleData->mShuffleStep = 10;
 ```
+
+*For supported layers and Model configuration parameters refer to chapter 9.*
 
 ### Compile Model object
 
@@ -199,3 +204,23 @@ Eigen::MatrixXd predictedData = model.modelPredict(inputData);
 ```
 
 As a result we are geting Eigen::MatrixXd of predicted data.
+
+<a name="modelconfig"></a>
+## 8. List of supported Layer and Model Configuration parameters
+
+The following configuration parameters are currently supported by Neural Network Framework:
+* Activations and activation derivatives
+    * InputActivation (Pass trough)
+    * Sigmoid
+    * Relu
+    * LeakyRelu
+* Losses and loss derivatives
+    * MeanSquaredError
+    * MeanAbsoluteError
+    * BinaryCrossEntropy
+* Metrics
+    * ClassificationAccuracy
+    * MeanSquaredError
+    * MeanAbsoluteError
+* Optimizers
+    * GradientDescent
