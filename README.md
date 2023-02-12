@@ -109,7 +109,8 @@ $ ./build/NNFramework_test.exe
 <a name="cheatsheet"></a>
 ## 8. Example usecase
 
-Following chapters contain "cheatsheet" on how to use the Neural Network Framework. Complete code snippet can be found in ./src/main.cpp
+Following chapters contain "cheatsheet" on how to use the Neural Network Framework and is representative complete workflow.  
+Complete code snippet can be found in ./src/main.cpp
 
 ### Include NNFramework
 
