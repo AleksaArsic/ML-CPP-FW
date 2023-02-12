@@ -10,8 +10,9 @@ Simple machine learning framework implemented using C++20 programming language.
 5. [ Prerequisites ](#prereq)
 6. [ Build the project ](#build)
 7. [ Run the project ](#run)
-8. [ Example usecase ](#cheatsheet)
-9. [ List of supported Layer and Model Configuration parameters ](#modelconfig)
+8. [ Include NNFramework in CMake project ](#cmakeinclude)
+9. [ Example usecase ](#cheatsheet)
+10. [ List of supported Layer and Model Configuration parameters ](#modelconfig)
 
 <a name="intro"></a>
 ## 2. Introduction
@@ -107,8 +108,16 @@ After successfull build of the project, test executable can be ran as simple as:
 $ ./build/NNFramework_test.exe
 ```
 
+<a name="cmakeinclude"></a>
+## 8. Include NNFramework in CMake project
+
+Include NNFramework in CMake project is as simple as:
+``` cmake
+target_link_libraries(NNFramework_test PUBLIC NNFramework) # link NNFramework library 
+```
+
 <a name="cheatsheet"></a>
-## 8. Example usecase
+## 9. Example usecase
 
 Following chapters contain "cheatsheet" on how to use the Neural Network Framework and is representative complete workflow.  
 Complete code snippet can be found in ./src/main.cpp
@@ -206,7 +215,7 @@ Eigen::MatrixXd predictedData = model.modelPredict(inputData);
 As a result we are geting Eigen::MatrixXd of predicted data.
 
 <a name="modelconfig"></a>
-## 8. List of supported Layer and Model Configuration parameters
+## 10. List of supported Layer and Model Configuration parameters
 
 The following configuration parameters are currently supported by Neural Network Framework:
 * Activations and activation derivatives
