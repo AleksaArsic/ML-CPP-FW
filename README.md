@@ -27,7 +27,7 @@ Currently the Neural Network Framework **supports** several functionalities:
 * Load saved NN model 
 * Continue training of the loaded NN model
 
-It is worth to mention that all of the mathemaical background is implemented from scratch. That includes Feedforward algorithm, Backpropagation algorithm, Losses, Metrics and Optimizers. As for the linear algebra operations Neural Network Framework comes with built-in functionality provided trough [Eigen library](https://eigen.tuxfamily.org/index.php?title=Main_Page). Eigen library is built as a part of NN Framework and serves as a linear algebra "back-end".
+It is worth to mention that all of the mathematical background is implemented from scratch. That includes Feedforward algorithm, Backpropagation algorithm, Losses, Metrics and Optimizers. As for the linear algebra operations Neural Network Framework comes with built-in functionality provided trough [Eigen library](https://eigen.tuxfamily.org/index.php?title=Main_Page). Eigen library is built as a part of NN Framework and serves as a linear algebra "back-end".
 
 Neural Network Framework is buildable as a static library and can easly be included into other projects trough CMake build system infrastructure.
 
