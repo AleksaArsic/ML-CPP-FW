@@ -33,13 +33,16 @@ It is worth to mention that all of the mathematical background is implemented fr
 
 Neural Network Framework is buildable as a static library and can easly be included into other projects trough CMake build system infrastructure.
 
+This repository provides test application that is covering complete workflow - design, configure, train and predict - on the constructed model. Test application is located under ./src/main.cpp path and incorporates NNFramework as it's core part from ./libs/ directory.
+**Neural Network Framework itself is located under ./lib/NNFramework directory.**
+
 <a name="struct"></a>
 ## 3. Repository structure
 
 * data - contains input data used for training of the neural network
 * inc - contains include files for the test application
 * lib
-  *  ***NNFramework*** - root for the actuall Neural Network Framework
+  *  ***NNFramework*** - root for the actual Neural Network Framework
   * matplotplusplus - containes external matplotplusplus library used for ploting graphs
 * src - containes the main.cpp of the test application
 * tools - contains third party tools used for the project build as well as external libraries (nothing from this directory is included in the build of the project)
