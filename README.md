@@ -111,7 +111,7 @@ $ ./build/NNFramework_test.exe
 <a name="cmakeinclude"></a>
 ## 8. Include NNFramework in CMake project
 
-Include NNFramework in CMake project is as simple as:
+Including NNFramework in CMake project is as simple as:
 ``` cmake
 target_link_libraries(NNFramework_test PUBLIC NNFramework) # link NNFramework library 
 ```
@@ -124,7 +124,7 @@ Complete code snippet can be found in ./src/main.cpp
 
 ### Include NNFramework
 
-Include of the Neural Network framework alongside with all of its functionality can be done as simple as:
+Including of the Neural Network framework alongside with all of its functionality can be done as simple as:
 
 ```cpp
 #include "NNFramework/NNFramework
