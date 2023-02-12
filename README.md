@@ -120,6 +120,8 @@ Including NNFramework in CMake project is as simple as:
 target_link_libraries(NNFramework_test PUBLIC NNFramework) # link NNFramework library 
 ```
 
+Minimal version of cmake is: **3.15** with CXX_STANDARD 20
+
 <a name="cheatsheet"></a>
 ## 9. Example usecase
 
