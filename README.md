@@ -10,6 +10,7 @@ Simple machine learning framework implemented using C++20 programming language.
 5. [ Prerequisites ](#prereq)
 6. [ Build the project ](#build)
 7. [ Run the project ](#run)
+8. [ Example usecase](#cheatsheet)
 
 <a name="intro"></a>
 ## 2. Introduction
@@ -21,7 +22,7 @@ Currently the Neural Network Framework **supports** several functionalities:
 * Predict on trained NN model
 * Present the information of the constructed NN model to the end user
 
-**Unsuported** features that are likly to be implemented in the future:
+**Unsuported** features that are likely to be implemented in the future:
 * Save trained NN model localy 
 * Load saved NN model 
 * Continue training of the loaded NN model
@@ -104,3 +105,96 @@ After successfull build of the project, test executable can be ran as simple as:
 ``` sh
 $ ./build/NNFramework_test.exe
 ```
+
+<a name="cheatsheet"></a>
+## 8. Example usecase
+
+Following chapters contain "cheatsheet" on how to use the Neural Network Framework. Complete code snippet can be found in ./src/main.cpp
+
+### Include NNFramework
+
+Include of the Neural Network framework alongside with all of its functionality can be done as simple as:
+
+```cpp
+#include "NNFramework/NNFramework
+```
+
+### Declare Model object
+
+Declaration of Neural Network model is done using:
+
+```cpp
+Model::Model model;
+```
+At this stage the model cannot be trained as it internal architecture and configuration is not defined. This will only declare object of class Model with 0 layers and no configuration.
+
+### Add Layers to the Model object
+
+Adding layers to neural network model is done by invoking Model.addLayer() method:
+
+```cpp
+model.addLayer(Layers::Dense(1)); // or -> model.addLayer(Layers::Dense(3, Activations::ActivationType<Activations::InputActivation>()));
+model.addLayer(Layers::Dense(20, Activations::ActivationType<Activations::LeakyRelu>()));
+model.addLayer(Layers::Dense(1, Activations::ActivationType<Activations::Sigmoid>()));
+```
+
+At this stage we added 3 layers to our neural network model with one input, one hidden and one output layer with the following configuration:
+* Input layer with one artificial neuron
+* Hidden layer with 20 artificial neurons and LeakyRelu activation function
+* Output layer with one artificial neuron and Sigmoid activation function
+
+### Add Configuration of the Neural Network Model
+
+Loss, Metrics, Optimizer and additional configuration of the Model object is configured trough instance of Model::ModelConfiguration::ModelConfiguration object:
+
+```cpp
+Model::ModelConfiguration::ModelConfiguration modelConfig { Loss::LossType<Loss::MeanSquaredError>(), 
+                                                            Metrics::MetricsType<Metrics::MeanSquaredError>(), 
+                                                            Optimizers::OptimizersType<Optimizers::GradientDescent>(),
+                                                            Model::ModelConfiguration::ShuffleData { true, 5 } };
+```
+
+We can also change the values of the relevant configuration fields:
+
+```cpp
+modelConfig.mOptimizerPtr->learningRate = 0.1;
+modelConfig.mShuffleData->mShuffleStep = 10;
+```
+
+### Compile Model object
+
+After we defined ModelConfiguration we can now bind it to our neural network model trough Model.modelCompile() method:
+
+```cpp
+model.compileModel(modelConfig);
+```
+
+Now, our neural network model is ready for training (with assumption that we are in possesion of desired training dataset).
+
+### [Optional] Show model summary
+
+If we want to log model summary with all the information regarding individual layers, loss, metric, optimizer, learnable parameters, etc. we can invoke Model.modelSummary() method that will log all mentioned data to standard output:
+
+```cpp
+model.modelSummary();
+```
+
+This way we can be aware of the model architecture and configuration.
+
+### Train the model
+
+Training of the model is invoked trough Model.fit() method:
+
+```cpp
+model.modelFit(inputData, expectedData, numberOfEpochs);
+```
+
+### Predict output on the trained model
+
+Predicting the output on the trained model can be invoked trough Model.predict() method:
+
+```cpp
+Eigen::MatrixXd predictedData = model.modelPredict(inputData);
+```
+
+As a result we are geting Eigen::MatrixXd of predicted data.
