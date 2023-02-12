@@ -13,6 +13,7 @@ Simple machine learning framework implemented using C++20 programming language.
 8. [ Include NNFramework in CMake project ](#cmakeinclude)
 9. [ Example usecase ](#cheatsheet)
 10. [ List of supported Layer and Model Configuration parameters ](#modelconfig)
+11. [ Headers description ](#headerdesc)
 
 <a name="intro"></a>
 ## 2. Introduction
@@ -29,11 +30,11 @@ Currently the Neural Network Framework **supports** several functionalities:
 * Load saved NN model 
 * Continue training of the loaded NN model
 
-It is worth to mention that all of the mathematical background is implemented from scratch. That includes Feedforward algorithm, Backpropagation algorithm, Losses, Metrics and Optimizers. As for the linear algebra operations Neural Network Framework comes with built-in functionality provided trough [Eigen library](https://eigen.tuxfamily.org/index.php?title=Main_Page). Eigen library is built as a part of NN Framework and serves as a linear algebra "back-end".
+It is worth to mention that all of the mathematical background is implemented from scratch. That includes Feedforward algorithm, Backpropagation algorithm, Losses, Metrics and Optimizers. As for the linear algebra operations Neural Network Framework comes with built-in functionality provided trough [Eigen library](https://eigen.tuxfamily.org/index.php?title=Main_Page). Eigen library is built as a part of NN Framework and serves as a linear algebra "backend".
 
 Neural Network Framework is buildable as a static library and can easly be included into other projects trough CMake build system infrastructure.
 
-This repository provides test application that is covering complete workflow - design, configure, train and predict - on the constructed model. Test application is located under ./src/main.cpp path and incorporates NNFramework as it's core part from ./libs/ directory.  
+This repository provides test application that is covering complete workflow - design, configure, train and predict - on the constructed model. Test application is located under ./src/main.cpp path and incorporates NNFramework as it's core part from ./lib/ directory.  
 ***Neural Network Framework itself is located under ./lib/NNFramework directory.***
 
 <a name="struct"></a>
@@ -221,18 +222,36 @@ As a result we are geting Eigen::MatrixXd of predicted data.
 ## 10. List of supported Layer and Model Configuration parameters
 
 The following configuration parameters are currently supported by Neural Network Framework:
-* Activations and activation derivatives
+* **Activations and activation derivatives**
     * InputActivation (Pass trough)
     * Sigmoid
     * Relu
     * LeakyRelu
-* Losses and loss derivatives
+* **Losses and loss derivatives**
     * MeanSquaredError
     * MeanAbsoluteError
     * BinaryCrossEntropy
-* Metrics
+* **Metrics**
     * ClassificationAccuracy
     * MeanSquaredError
     * MeanAbsoluteError
-* Optimizers
+* **Optimizers**
     * GradientDescent
+
+<a name="headerdesc"></a>
+## 10. Headers description
+As mentioned earlier, root of the NNFramework is located under ./lib/NNFramework. For the user to have a little more knowledge of the framework in the following section brief descriptions of each header file in respect to NNFramework root are provided:
+* ./NNFramework - header file whose purpose is to enable easy inclusion of the NNFramework into the end user project
+* ./inc/Common/Common.hpp - header file with common code used by NNFramework
+* ./inc/Core/Activations.hpp - holds activation functors and their derivations
+* ./inc/Core/Layers.hpp - holds Layer classes
+* ./inc/Core/Loss.hpp - holds loss functors and their derivations
+* ./inc/Core/Metrics.hpp - holds metric functors
+* ./inc/Core/Model.hpp - holds Model class definition
+* ./inc/Core/ModelConfiguration - holds MoldeConfiguration class used for defining Model configuration parameters
+* ./inc/Core/Optimizers.hpp - holds optimizer functors
+* ./inc/Core/WeightInitializer.hpp - holds WeightInitializer class used for initialization of the Layer weights at the Model.compile() time
+* ./inc/Eigen/* - holds linear algebra "backend" library of the NNFramework
+* ./inc/Utilities/DataHandler.hpp - holds DataHandler class that is used for data manipulation (normalization, denormalization, data shuffle) 
+
+Each of the header file serves as an entry point for potential development and is structured in a way that is development friendly for future implementations and extensions of NNFramework.
