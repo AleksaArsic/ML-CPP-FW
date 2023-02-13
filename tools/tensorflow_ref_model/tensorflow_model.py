@@ -84,12 +84,12 @@ tf.keras.backend.set_floatx('float64')
 model = Sequential()
 
 model.add(Input(shape=(1,)))
-model.add(Dense(1, activation='relu'))
+model.add(Dense(20, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
-model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.5), \
+model.compile(optimizer=tf.compat.v1.train.GradientDescentOptimizer(learning_rate=0.5), \
               loss='mean_squared_error',                            \
-              metrics=['accuracy'])
+              metrics=['mean_squared_error'])
 
 model.summary()
 
@@ -99,9 +99,13 @@ print(model_history)
 
 predictions = model.predict(inData)
 
-print(predictions)
-
-list1, list2 = zip(*sorted(zip(inData, predictions)))
+inData, predictions = zip(*sorted(zip(inData, predictions)))
+dIn, dOut = zip(*sorted(zip(inData, outData)))
 
 plt.plot(inData, predictions)
 plt.savefig('model_output.png')
+
+plt.clf()
+
+plt.plot(dIn, dOut)
+plt.savefig('in_data.png')
