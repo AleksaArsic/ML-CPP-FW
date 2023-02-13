@@ -71,6 +71,13 @@ After successfully installing msys2 tooling open MSYS2 MINGW64 terminal from sta
 $ pacman -S --needed base-devel mingw-w64-x86_64-toolchain
 ```
 
+*Note: If asked which mingw tools to install, choose all (19) packages*
+
+Also, install cmake for mingw64 with the command:
+``` sh
+pacman -S mingw-w64-x86_64-cmake
+```
+
 After the command is executed run the following command to install gnuplot needed for the external library matplotplusplus:
 ``` sh
 $ pacman -S mingw-w64-x86_64-gnuplot
