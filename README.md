@@ -225,7 +225,7 @@ Training of the model is invoked trough Model.fit() method:
 model.modelFit(inputData, expectedData, numberOfEpochs);
 ```
 
-### [Optional] Retrieve Model.fit() history
+### [Optional] Retrieve Model.modelFit() history
 
 We can also retrieve Model.fit() history buffers:
 
