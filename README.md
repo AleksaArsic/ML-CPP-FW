@@ -225,6 +225,14 @@ Training of the model is invoked trough Model.fit() method:
 model.modelFit(inputData, expectedData, numberOfEpochs);
 ```
 
+### [Optional] Retrieve Model.fit() history
+
+We can also retrieve Model.fit() history buffers:
+
+```cpp
+auto modelHistory = model.get_mModelHistory();
+```
+
 ### Predict output on the trained model
 
 Predicting the output on the trained model can be invoked trough Model.predict() method:
