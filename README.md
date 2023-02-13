@@ -49,6 +49,7 @@ This repository provides test application that is covering complete workflow - d
 * lib
   *  ***NNFramework*** - root for the actual Neural Network Framework
   * matplotplusplus - containes external matplotplusplus library used for ploting graphs
+* results - contains results of the test usecase (for academical purposes, manually added, does not get generated from project itself)
 * src - containes the main.cpp of the test application
 * tools - contains third party tools used for the project build as well as external libraries (nothing from this directory is included in the build of the project)
 
