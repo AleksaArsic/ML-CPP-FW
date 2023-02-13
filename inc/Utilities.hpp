@@ -6,6 +6,7 @@
 #include "matplot/matplot.h"
 #include "NNFramework/NNFramework"
 
+// Function that is specific to the given problem
 void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> data)
 {
     using namespace matplot;
@@ -22,6 +23,7 @@ void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> data
     show();               // use show instead
 }
 
+// Function that is specific to the given problem
 void plotModelHistory(double epoch, std::tuple<Eigen::VectorXd, Eigen::VectorXd> modelHistory)
 {
     using namespace matplot;

@@ -9,7 +9,10 @@ namespace NNFramework
             // Initialize weights based on the activation function
             void WeightInitializer::initializeWeights(const std::shared_ptr<Eigen::MatrixXd>& weights, std::string activationName)
             {
-                // maybe use actual type or enum class instead of the name?
+
+                // Activations::ActivationTypeEnum won't work here as we are having pointers to the 
+                // Activations::ActivationFunctor in the actual layers
+                // room for future improvement
                 if("Sigmoid" == activationName)
                 {
                     set_XavierGlorotParameters((*weights).cols(), (*weights).rows());
