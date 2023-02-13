@@ -82,15 +82,16 @@ namespace NNFramework
                 uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
                 bool get_mIsCompiled() const noexcept { return this->mIsCompiled; }
 
+                // get ModelHistory
+                auto get_mModelHistory() const noexcept { return this->mHistory; }
+
             private:
                 // saves model training history
                 // Loss, Validation Loss, Accuracy and Validation Accuracy
                 struct ModelHistory final
                 {
                     Eigen::VectorXd hLoss;
-                    Eigen::VectorXd hValLoss;
                     Eigen::VectorXd hAccuracy;
-                    Eigen::VectorXd hValAccuracy;
                 };
 
                 ModelHistory mHistory; // Model history container
@@ -128,7 +129,7 @@ namespace NNFramework
 
                 // Calculate loss
                 // Return values: tuple[0] = loss, tuple[1] = metrics
-                std::tuple<Eigen::VectorXd, double> calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
+                std::tuple<Eigen::MatrixXd, double> calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx);
 
         };
     }

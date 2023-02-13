@@ -47,7 +47,7 @@ namespace NNFramework
                 Eigen::MatrixXd diffSquared = x - y;
                 diffSquared = diffSquared.cwiseProduct(diffSquared);
 
-                return 0.5 *  diffSquared;
+                return diffSquared;
             }
 
             Eigen::MatrixXd derivative(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y) const

@@ -6,21 +6,40 @@
 #include "matplot/matplot.h"
 #include "NNFramework/NNFramework"
 
-void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> data, std::string savePath = "img/graph")
-//void plotData()
+void plotData(std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> data)
 {
     using namespace matplot;
     auto f = figure(true);
 
+    // plot training data
     plot(std::get<0>(data), std::get<1>(data));
     hold(on);
+    // plot predicted data
     plot(std::get<0>(data), std::get<2>(data));
+    title("Predictions/Expected output");
 
-    //plot({0, 1, 2, 3}, {0, 1, 2, 3});
-
-    std::string filename = "./test.pdf";
-    //save(filename); // currently is not supported by the matplot++ library
+    //save(filename);      // currently is not supported by the matplot++ library
     show();               // use show instead
+}
+
+void plotModelHistory(double epoch, std::tuple<Eigen::VectorXd, Eigen::VectorXd> modelHistory)
+{
+    using namespace matplot;
+    auto f = figure(true);
+
+    Eigen::VectorXi xAxis = Eigen::VectorXi::LinSpaced(epoch, 1, epoch + 1);
+
+    tiledlayout(2, 1);
+
+    auto ax1 = nexttile();
+    plot(ax1, xAxis, std::get<0>(modelHistory));
+    title("Loss");  
+
+    auto ax2 = nexttile();
+    plot(ax2, xAxis, std::get<1>(modelHistory));
+    title("Metrics");     
+
+    show();
 }
 
 // used for sorting pairs of (xi, yi)
@@ -95,7 +114,7 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> loadData(const std::string path, ui
     }
     else
     {
-        throw "Input file is not opened.";
+        throw std::runtime_error("Input file is not opened.");
     }
 }
 

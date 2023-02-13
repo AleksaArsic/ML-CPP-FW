@@ -113,6 +113,8 @@ namespace NNFramework
                 Eigen::VectorXd loss = Eigen::VectorXd::Zero(expectedData.cols());
                 double metrics;
                 
+                std::tuple<Eigen::VectorXd, double> lossAndMetrics;
+
                 // for each data row in inputData
                 for (uint32_t rowIdx = 0; rowIdx < inputData.rows(); ++rowIdx)
                 {
@@ -120,12 +122,12 @@ namespace NNFramework
                     forwardPass(inputData, rowIdx);
                     
                     // calculate losses and metrics
-                    auto [l, m] = calculateLossAndMetrics(expectedData, rowIdx);
-                    loss += l;
-                    metrics += m;
+                    lossAndMetrics = calculateLossAndMetrics(expectedData, rowIdx);
+                    loss += std::get<0>(lossAndMetrics);
+                    metrics += std::get<1>(lossAndMetrics);
 
                     // Log epoch status
-                    std::cout << "Epoch: " << (ep + 1) << " -> Loss: " << (loss.sum() / inputData.rows()) << " Accuracy: " << (metrics) << "\r";
+                    std::cout << "Epoch: " << (ep + 1) << " -> Loss: " << (loss.sum() / inputData.rows()) << " Accuracy: " << (metrics / 100.0) << "\r";
                     std::cout.flush();  
 
                     // backpropagation trough the NNetwork
@@ -137,11 +139,11 @@ namespace NNFramework
                 std::cout << std::endl;
 
                 // save loss and metrics of each epoh
-                mHistory.hLoss.resize(ep + 1);
+                mHistory.hLoss.conservativeResize(ep + 1); // resize without coefficient destruction
                 mHistory.hLoss[ep] = loss.sum() / inputData.rows();
 
-                mHistory.hAccuracy.resize(ep + 1);
-                mHistory.hAccuracy[ep] = metrics;
+                mHistory.hAccuracy.conservativeResize(ep + 1); // resize without coefficient destruction
+                mHistory.hAccuracy[ep] = metrics / 100.0; // get percentage in range [0, 1]
             }
         }
 
@@ -398,14 +400,14 @@ namespace NNFramework
         }
 
         // Return values: tuple[0] = loss, tuple[1] = metrics
-        std::tuple<Eigen::VectorXd, double> Model::calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
+        std::tuple<Eigen::MatrixXd, double> Model::calculateLossAndMetrics(const Eigen::MatrixXd& expectedData, const uint32_t rowIdx)
         {
             // CHECK MATRICES AND VECTORS AS INPUT VALUES 
             Eigen::MatrixXd outputLayerZActivated = *(mLayers[OUTPUT_LAYER_IDX(mLayersNo)]->get_mLayerZActivated());
             Eigen::VectorXd modelOutput(Eigen::Map<Eigen::VectorXd>(outputLayerZActivated.data(), outputLayerZActivated.cols() * outputLayerZActivated.rows()));
             
             Eigen::MatrixXd expectedOutput = expectedData.row(rowIdx);
-            Eigen::VectorXd loss = ((*mModelConfigPtr->mLossPtr))(expectedOutput, outputLayerZActivated);
+            Eigen::MatrixXd loss = ((*mModelConfigPtr->mLossPtr))(expectedOutput, outputLayerZActivated);
             double metrics = ((*mModelConfigPtr->mMetricsPtr))(modelOutput, expectedOutput);       
 
             return std::make_tuple(loss, metrics);    
