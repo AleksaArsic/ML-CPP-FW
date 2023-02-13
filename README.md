@@ -14,6 +14,7 @@ Simple machine learning framework implemented using C++20 programming language.
 9. [ Example usecase ](#cheatsheet)
 10. [ List of supported Layer and Model Configuration parameters ](#modelconfig)
 11. [ Headers description ](#headerdesc)
+12. [ Results ](#results)
 
 <a name="intro"></a>
 ## 2. Introduction
@@ -282,3 +283,24 @@ As mentioned earlier, root of the NNFramework is located under ./lib/NNFramework
 Each of the header file serves as an entry point for potential development and is structured in a way that is development friendly for future implementations and extensions of NNFramework.
 
 *For better description of each Class refere to the source code.*
+
+<a name="results"></a>
+## 10. Results
+
+Below are the results of the training of defined model for 50 epochs that uses:
+* Input layer with one input node
+* Hidden layer with 10 neurons and leakyRelu activation function
+* Output layer with one output node and sigmoid activation function
+* Loss function: Mean squared error
+* Metrics: Mean squared error
+* Optimizer: Gradient descent with learning rate equal to 0.1
+* Training data shuffle on every 10th epoch
+
+Training data can be found [here](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/data/input_data.txt).
+
+![Loss and Metrics](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/loss_metrics.png)
+![Predicted and expected values](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/expected_predicted.png)
+
+**We can safely conclude that the Loss function is converging and the the predicted output is closely relating the expected output.**
+
+For the reference we provide [Tensorflow python reference model](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/tools/tensorflow_ref_model/tensorflow_model.py) with the same architecture and configuration, the results of the Tensorflow framework can be seen on the images below:
