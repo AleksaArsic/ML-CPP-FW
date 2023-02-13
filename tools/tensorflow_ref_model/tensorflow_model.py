@@ -78,34 +78,39 @@ outData = [
   0.984720423, 0.898327163
 ]
 
-
 tf.keras.backend.set_floatx('float64')
 
 model = Sequential()
 
-model.add(Input(shape=(1,)))
+model.add(Input(shape=(1, )))
 model.add(Dense(20, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 model.compile(optimizer=tf.compat.v1.train.GradientDescentOptimizer(learning_rate=0.5), \
               loss='mean_squared_error',                            \
-              metrics=['mean_squared_error'])
+              metrics='mean_squared_error')
 
 model.summary()
 
-model_history = model.fit(inData, outData, batch_size = 1, epochs = 50)
-
-print(model_history)
+model_history = model.fit(inData, outData, batch_size=1, epochs=50)
 
 predictions = model.predict(inData)
 
-inData, predictions = zip(*sorted(zip(inData, predictions)))
+inDataSorted, predictions = zip(*sorted(zip(inData, predictions)))
 dIn, dOut = zip(*sorted(zip(inData, outData)))
 
-plt.plot(inData, predictions)
-plt.savefig('model_output.png')
+plt.plot(inDataSorted, predictions)
+plt.plot(dIn, dOut)
+plt.legend(["predicted output", "expected output"], loc="lower left")
+plt.title('Predictions/Expected output')
+plt.savefig('out.png')
 
 plt.clf()
 
-plt.plot(dIn, dOut)
-plt.savefig('in_data.png')
+epochs = list(range(1, 51))
+fig, axs = plt.subplots(2)
+axs[0].plot(epochs, model_history.history['loss'])
+axs[1].plot(epochs, model_history.history['mean_squared_error'])
+axs[0].title.set_text('Loss')
+axs[1].title.set_text('Metrics')
+plt.savefig('lossAndMetrics.png')
