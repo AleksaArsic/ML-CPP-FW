@@ -48,8 +48,8 @@ namespace NNFramework
                 std::shared_ptr<Eigen::MatrixXd> get_mLayerBGradients() const noexcept { return this->mLayerBGradients; }
 
                 // Setters
-                void set_mLayerId(uint8_t id) { this->mLayerId = id; }
-                void set_mLearnableCoeffs(uint32_t coeffsNo) { this->mLearnableCoeffs = coeffsNo; }
+                void set_mLayerId(const uint8_t id) { this->mLayerId = id; }
+                void set_mLearnableCoeffs(const uint32_t coeffsNo) { this->mLearnableCoeffs = coeffsNo; }
 
             protected:
                 std::shared_ptr<Eigen::MatrixXd> mLayerWeights;

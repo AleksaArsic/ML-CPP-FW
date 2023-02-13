@@ -120,45 +120,47 @@ namespace NNFramework
 
         struct LeakyRelu final : ActivationFunctor
         {
-            double factor = 0.01; // f(y) = a*y -> when a is not 0.01 than it's called Randomized ReLU as per: https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6
+            public:
+                std::string name() const override
+                {
+                    return "LeakyRelu";
+                }
 
-            std::string name() const override
-            {
-                return "LeakyRelu";
-            }
+                Eigen::MatrixXd activate(const Eigen::MatrixXd& x) const override 
+                { 
+                    Eigen::MatrixXd retVec = x.unaryExpr([this](const double& el) { return (el >= 0.0) ? el : factor * el; } );
 
-            Eigen::MatrixXd activate(const Eigen::MatrixXd& x) const override 
-            { 
-                Eigen::MatrixXd retVec = x.unaryExpr([this](const double& el) { return (el >= 0) ? el : factor * el; } );
+                    return retVec;
+                }
 
-                return retVec;
-            }
+                Eigen::MatrixXd derivative(const Eigen::MatrixXd& x) const override 
+                {
+                    std::string fname = __FUNCTION__;
 
-            Eigen::MatrixXd derivative(const Eigen::MatrixXd& x) const override 
-            {
-                std::string fname = __FUNCTION__;
-
-                Eigen::MatrixXd retVec = x.unaryExpr(
-                    [this, fname](const double& el)
-                    {
-                        if(0.0 < el)
+                    Eigen::MatrixXd retVec = x.unaryExpr(
+                        [this, fname](const double& el)
                         {
-                            return 1.0;
+                            if(0.0 < el)
+                            {
+                                return 1.0;
+                            }
+                            else if (0.0 > el)
+                            {
+                                return factor;
+                            }
+                            else
+                            {
+                                std::cout << fname << ": ";
+                                throw std::runtime_error("Activation derivative undefined in zero!");    
+                            }
                         }
-                        else if (0.0 > el)
-                        {
-                            return factor;
-                        }
-                        else
-                        {
-                            std::cout << fname << ": ";
-                            throw std::runtime_error("Activation derivative undefined in zero!");    
-                        }
-                    }
-                );
+                    );
 
-                return retVec;
-            }
+                    return retVec;
+                }
+
+            private:
+                const double factor = 0.01; // f(y) = a*y -> when a is not 0.01 than it's called Randomized ReLU as per: https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6
         };
     }
 }

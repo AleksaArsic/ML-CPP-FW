@@ -36,7 +36,7 @@ namespace NNFramework
                 std::shared_ptr<Eigen::MatrixXd> layerBiasGradients;
 
                 // skip first layer as there are no gradients calculated for the pass trough layer
-                for(uint32_t i = (INPUT_LAYER_IDX + 1L); i < layers.size(); ++i)
+                for(uint32_t i = (INPUT_LAYER_IDX + 1U); i < layers.size(); ++i)
                 {
                     layerWeights = layers[i]->get_mLayerWeights();
                     layerWeightsGradients = layers[i]->get_mLayerWGradients();

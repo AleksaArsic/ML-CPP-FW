@@ -18,10 +18,10 @@ namespace NNFramework
                 uint16_t mShuffleStep;
 
                 // Parametrized constructor
-                ShuffleData(bool shuffleOnFit, uint16_t mShuffleStep) : mShuffleOnFit(shuffleOnFit), mShuffleStep(mShuffleStep) { }
+                ShuffleData(const bool shuffleOnFit, const uint16_t mShuffleStep) : mShuffleOnFit(shuffleOnFit), mShuffleStep(mShuffleStep) { }
 
                 // Copy constructor
-                ShuffleData(ShuffleData& sData) : mShuffleOnFit(sData.mShuffleOnFit), mShuffleStep(sData.mShuffleStep) { }
+                ShuffleData(const ShuffleData& sData) : mShuffleOnFit(sData.mShuffleOnFit), mShuffleStep(sData.mShuffleStep) { }
             };
 
             // class specific for defining model configuration such as:
@@ -42,6 +42,7 @@ namespace NNFramework
                     // Optimizer functor unique_ptr
                     std::unique_ptr<Optimizers::OptimizersFunctor> mOptimizerPtr;
 
+                    // ShuffleData class unique_ptr
                     std::unique_ptr<ShuffleData> mShuffleData;
 
                     template<class X, class Y, class Z>

@@ -120,6 +120,7 @@ namespace NNFramework
                 {
                     for(uint32_t j = 0; j < result.cols(); ++j)
                     {
+                        // change to eigen matrix operation
                         result(i, j) = (y(i, j) - x(i, j)) / (y(i, j) * (1 - y(i, j)));
                     }
                 }

@@ -22,9 +22,8 @@ namespace NNFramework
 
                 Model() : mLearnableCoeffs(0), mLayersNo(0), mIsCompiled(false) { }
 
-                ~Model() = default;
-
                 // Add new layer to the NN Model
+                // check what happens when sent by reference
                 bool addLayer(Layers::Layer layer);
 
                 // Compile model with added layers, optimizer, loss function and metrics 
@@ -79,7 +78,7 @@ namespace NNFramework
 
                 // Getters
                 uint32_t get_mLearnableCoeffs() const noexcept { return this->mLearnableCoeffs; }
-                uint8_t get_mLayersNo() const noexcept { return this->mLayersNo; }
+                uint16_t get_mLayersNo() const noexcept { return this->mLayersNo; }
                 bool get_mIsCompiled() const noexcept { return this->mIsCompiled; }
 
                 // get ModelHistory
@@ -101,7 +100,7 @@ namespace NNFramework
 
                 std::vector<std::unique_ptr<Layers::Layer>> mLayers; // Number of Layers is not known in advance thus, std::vector is more suitable for storing Layers
                 uint32_t mLearnableCoeffs;
-                uint8_t mLayersNo;
+                uint16_t mLayersNo;
                 bool mIsCompiled;
 
                 // Check if model is compiled
@@ -109,14 +108,14 @@ namespace NNFramework
 
                 // Check if data matrix (Eigen::MatrixXd) is empty
                 // throws an exception if data matrix is empty
-                void isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const;
+                void isDataEmpty(const std::string fName, const Eigen::MatrixXd& data) const;
 
                 // Check if input data and expected data have the same amount of rows
                 // Check if there is a pair for each input data tensor in expected data and vice versa
-                void checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const;
+                void checkInExpRowDim(const std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const;
 
                 // Check if the input Matrix has the same amount of columns as the number of rows in layer data
-                void checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const;
+                void checkRowColDim(const std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const;
 
                 // Initialize all layers coefficients
                 void initializeLayers();

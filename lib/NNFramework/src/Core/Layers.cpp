@@ -35,7 +35,7 @@ namespace NNFramework
 
         Dense::Dense(const uint8_t perceptronNo) : Layer(perceptronNo)
         {
-            mInstances++;
+            ++mInstances;
         }
 
     }

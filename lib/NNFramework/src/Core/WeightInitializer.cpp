@@ -23,14 +23,14 @@ namespace NNFramework
             }
 
             // set normal distribution parameters
-            void WeightInitializer::set_XavierGlorotParameters(double prevPercNo, double perceptronNo)
+            void WeightInitializer::set_XavierGlorotParameters(const double& prevPercNo, const double& perceptronNo)
             {
                 std::uniform_real_distribution<double>::param_type distParam(-1 * std::sqrt(2.0) / std::sqrt((prevPercNo + perceptronNo)), std::sqrt(2.0) / std::sqrt((prevPercNo + perceptronNo)));
                 mUniformDistribution.param(distParam);
             }
             
             // set uniform distribution parameters
-            void WeightInitializer::set_KaimingHeParameters(double prevPercNo)
+            void WeightInitializer::set_KaimingHeParameters(const double& prevPercNo)
             {
                 std::normal_distribution<double>::param_type distParam(0.0, std::sqrt(2.0 / prevPercNo));
                 mNormalDistribution.param(distParam);

@@ -56,7 +56,7 @@ namespace NNFramework
             catch(const std::exception& e)
             {
                 std::cerr << __FUNCTION__ << ": ";
-                std::cerr << e.what() << '\n';
+                std::cerr << e.what() << std::endl;
                 return false;
             }
 
@@ -65,8 +65,17 @@ namespace NNFramework
         // Load model weights from desired location
         bool Model::loadModel()
         {
-            /* Not supported in this version of NNFramework */
-            return false;
+            try
+            {
+                /* Not supported in this version of NNFramework */
+                return false;
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << __FUNCTION__ << ": ";
+                std::cerr << e.what() << std::endl;
+                return false;
+            }
         }
 
         // Train compiled model
@@ -209,7 +218,7 @@ namespace NNFramework
         }
 
         // Check if model is compiled
-        void Model::checkIsModelCompiled(std::string fName) const
+        void Model::checkIsModelCompiled(const std::string fName) const
         {
             if(false == mIsCompiled)
             {
@@ -220,7 +229,7 @@ namespace NNFramework
 
         // Check if data matrix (Eigen::MatrixXd) is empty
         // throws an exception if data matrix is empty
-        void Model::isDataEmpty(std::string fName, const Eigen::MatrixXd& data) const
+        void Model::isDataEmpty(const std::string fName, const Eigen::MatrixXd& data) const
         {
             if(NNFRAMEWORK_ZERO == data.size())
             {
@@ -231,7 +240,7 @@ namespace NNFramework
 
         // Check if input data and expected data have the same amount of rows
         // Check if there is a pair for each input data tensor in expected data and vice versa
-        void Model::checkInExpRowDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const
+        void Model::checkInExpRowDim(const std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& expData) const
         {
             if(inData.rows() != expData.rows())
             {
@@ -242,7 +251,7 @@ namespace NNFramework
         }
 
         // Check if the input Matrix has the same amount of columns as the number of rows in layer data
-        void Model::checkRowColDim(std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const
+        void Model::checkRowColDim(const std::string fName, const Eigen::MatrixXd& inData, const Eigen::MatrixXd& layerData) const
         {
             if(inData.cols() != layerData.rows())
             {
@@ -254,6 +263,13 @@ namespace NNFramework
         // Initialize all layers coefficients
         void Model::initializeLayers()
         {
+            std::shared_ptr<Eigen::MatrixXd> layerWeights;
+            std::shared_ptr<Eigen::MatrixXd> layerZ;
+            std::shared_ptr<Eigen::MatrixXd> layerBias;
+            std::shared_ptr<Eigen::MatrixXd> layerZActivated;
+            std::shared_ptr<Eigen::MatrixXd> layerWGradients;
+            std::shared_ptr<Eigen::MatrixXd> layerBGradients;
+
             // iterate trough layers
             for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
             {
@@ -262,12 +278,12 @@ namespace NNFramework
                 uint8_t prevPercNo = (INPUT_LAYER_IDX == layerId ? perceptronNo : mLayers[PREVIOUS_LAYER_IDX(layerId)]->get_mPerceptronNo());
         
                 // initialize layer coefficients
-                std::shared_ptr<Eigen::MatrixXd> layerWeights = (*it)->get_mLayerWeights();
-                std::shared_ptr<Eigen::MatrixXd> layerZ = (*it)->get_mLayerZ();
-                std::shared_ptr<Eigen::MatrixXd> layerBias = (*it)->get_mLayerBias();
-                std::shared_ptr<Eigen::MatrixXd> layerZActivated = (*it)->get_mLayerZActivated();
-                std::shared_ptr<Eigen::MatrixXd> layerWGradients = (*it)->get_mLayerWGradients();
-                std::shared_ptr<Eigen::MatrixXd> layerBGradients = (*it)->get_mLayerBGradients();
+                layerWeights = (*it)->get_mLayerWeights();
+                layerZ = (*it)->get_mLayerZ();
+                layerBias = (*it)->get_mLayerBias();
+                layerZActivated = (*it)->get_mLayerZActivated();
+                layerWGradients = (*it)->get_mLayerWGradients();
+                layerBGradients = (*it)->get_mLayerBGradients();
 
                 *layerZ = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
                 *layerZActivated = Eigen::MatrixXd::Zero(perceptronNo, MATRIX_COL_INIT_VAL);
@@ -319,18 +335,27 @@ namespace NNFramework
             // f(x) = x
             (*inputLayerZActivated) = (*inputLayerZ);    
 
+            // previous layer data
+            std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated;
+
+            // current layer data
+            std::shared_ptr<Eigen::MatrixXd> layerWeights;
+            std::shared_ptr<Eigen::MatrixXd> layerZ;
+            std::shared_ptr<Eigen::MatrixXd> layerBias;
+            std::shared_ptr<Eigen::MatrixXd> layerZActivated;
+
             // iterate trough layers 
             // skip first layer, as first (input) layer does not have weights nor activations
             for (uint32_t i = 1; i < mLayersNo; ++i)
             {
                 // get previous layer data
-                std::shared_ptr<Eigen::MatrixXd> prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
+                prevLayerZActivated = mLayers[PREVIOUS_LAYER_IDX(i)]->get_mLayerZActivated();
 
                 // get current layer data
-                std::shared_ptr<Eigen::MatrixXd> layerWeights = mLayers[i]->get_mLayerWeights();
-                std::shared_ptr<Eigen::MatrixXd> layerZ = mLayers[i]->get_mLayerZ();
-                std::shared_ptr<Eigen::MatrixXd> layerBias = mLayers[i]->get_mLayerBias();
-                std::shared_ptr<Eigen::MatrixXd> layerZActivated = mLayers[i]->get_mLayerZActivated();
+                layerWeights = mLayers[i]->get_mLayerWeights();
+                layerZ = mLayers[i]->get_mLayerZ();
+                layerBias = mLayers[i]->get_mLayerBias();
+                layerZActivated = mLayers[i]->get_mLayerZActivated();
 
                 // z = Wx + b
                 (*layerZ) = ((*layerWeights) * (*prevLayerZActivated)) + (*layerBias);

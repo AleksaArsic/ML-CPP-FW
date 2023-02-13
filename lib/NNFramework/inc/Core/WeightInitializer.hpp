@@ -37,9 +37,9 @@ namespace NNFramework
                     std::uniform_real_distribution<double> mUniformDistribution;
 
                     // set normal distribution parameters
-                    void set_XavierGlorotParameters(double prevPercNo, double perceptronNo);
+                    void set_XavierGlorotParameters(const double& prevPercNo, const double& perceptronNo);
                     // set uniform distribution parameters
-                    void set_KaimingHeParameters(double prevPercNo);
+                    void set_KaimingHeParameters(const double& prevPercNo);
             };
         }
     }
