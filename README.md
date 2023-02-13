@@ -85,6 +85,11 @@ $ pacman -S mingw-w64-x86_64-gnuplot
 
 **Close MSYS2 MINGW64 terminal and proceed to setup of environment variables**
 
+*Note: if you encounter problems with key-ring during any of the previous steps, this command should fix it:*
+``` sh
+$ pacman -S msys2-keyring 
+```
+
 ### Setting environment variables
 Edit your PATH environment variables to include paths to the msys2 mingw64 toolchain e.g:
 ```
