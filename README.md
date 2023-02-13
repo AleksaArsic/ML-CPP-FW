@@ -299,9 +299,12 @@ Below are the results of the training of defined model for 50 epochs that uses:
 
 Training data can be found [here](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/data/input_data.txt).
 
-![Loss and Metrics](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/loss_metrics.png)
-![Predicted and expected values](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/expected_predicted.png)
+![Loss and Metrics](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/NNFramework/loss_metrics.png)
+![Predicted and expected values](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/NNFramework/expected_predicted.png)
 
 **We can safely conclude that the Loss function is converging and the the predicted output is closely relating the expected output.**
 
 For the reference we provide [Tensorflow python reference model](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/tools/tensorflow_ref_model/tensorflow_model.py) with the same architecture and configuration, the results of the Tensorflow framework can be seen on the images below:
+
+![Loss and Metrics](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/Tensorflow/loss_metrics_tf.png)
+![Predicted and expected values](https://github.com/AleksaArsic/ML-CPP-FW/blob/main/results/img/Tensorflow/expected_predicted_tf.png)
