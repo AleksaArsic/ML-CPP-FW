@@ -29,6 +29,9 @@ Currently the Neural Network Framework **supports** several functionalities:
 * Save trained NN model localy 
 * Load saved NN model 
 * Continue training of the loaded NN model
+* Add more optimizers (AdaDelta, Adam, etc.)
+* Add more activation functions (softmax, tanh, ... )
+* Add more layer types (Convolutive, Flatten, ... )
 
 It is worth to mention that all of the mathematical background is implemented from scratch. That includes Feedforward algorithm, Backpropagation algorithm, Losses, Metrics and Optimizers. As for the linear algebra operations Neural Network Framework comes with built-in functionality provided trough [Eigen library](https://eigen.tuxfamily.org/index.php?title=Main_Page). Eigen library is built as a part of NN Framework and serves as a linear algebra "backend".
 
